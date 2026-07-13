@@ -1,0 +1,66 @@
+{
+  "schema_version": "2.0",
+  "monitored_at": "2026-07-13T16:30:00+08:00",
+  "future_field": "ignored",
+  "model_iq": {
+    "comparisons": {
+      "gpt_56_sol_xhigh": {
+        "label": "GPT-5.6 Sol xhigh",
+        "model": "gpt-5.6-sol",
+        "reasoning_effort": "xhigh",
+        "latest": {
+          "date": "2026-07-13-pm",
+          "score": 105,
+          "status": "green",
+          "passed": 7,
+          "tasks": 10,
+          "wall_seconds": 3074,
+          "cost_usd": 33.626661
+        },
+        "recent_days": [
+          {"date": "2026-07-12-pm", "score": 105, "wall_seconds": 2173},
+          {"date": "2026-07-13-am", "score": 105, "wall_seconds": 2251},
+          {"date": "2026-07-13-pm", "score": 105, "wall_seconds": 3074}
+        ]
+      },
+      "gpt_56_sol_low": {
+        "label": "GPT-5.6 Sol low",
+        "model": "gpt-5.6-sol",
+        "reasoning_effort": "low",
+        "latest": {
+          "date": "2026-07-13-pm",
+          "score": 90,
+          "status": "yellow",
+          "passed": 6,
+          "tasks": 10,
+          "wall_seconds": 1420,
+          "cost_usd": 9.367641
+        },
+        "recent_days": [
+          {"date": "2026-07-12-pm", "score": 45, "wall_seconds": 1099},
+          {"date": "2026-07-13-am", "score": 75, "wall_seconds": 1058},
+          {"date": "2026-07-13-pm", "score": 90, "wall_seconds": 1420}
+        ]
+      },
+      "gpt_56_luna_medium": {
+        "label": "GPT-5.6 Luna medium",
+        "model": "gpt-5.6-luna",
+        "reasoning_effort": "medium",
+        "latest": {
+          "date": "2026-07-13-pm",
+          "score": 30,
+          "status": "red",
+          "passed": 2,
+          "tasks": 10,
+          "wall_seconds": 1955,
+          "cost_usd": 2.429979
+        },
+        "recent_days": [
+          {"date": "2026-07-12-pm", "score": 30, "wall_seconds": 1328},
+          {"date": "2026-07-13-am", "score": 60, "wall_seconds": 1465},
+          {"date": "2026-07-13-pm", "score": 30, "wall_seconds": 1955}
+        ]
+      }
+    }
+  }
+}

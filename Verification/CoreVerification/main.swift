@@ -1,6 +1,30 @@
 import Foundation
 import ShowCodexIQCore
 
+actor VerificationRadarClient: RadarClient {
+    private let result: RadarFetchResult
+    private(set) var calls = 0
+
+    init(result: RadarFetchResult) {
+        self.result = result
+    }
+
+    func fetch(cacheValidators: CacheValidators?) async throws -> RadarFetchResult {
+        calls += 1
+        try await Task.sleep(for: .milliseconds(25))
+        return result
+    }
+
+    func callCount() -> Int { calls }
+}
+
+actor VerificationSnapshotStore: SnapshotStoring {
+    private var state: StoredRadarState?
+
+    func load() async throws -> StoredRadarState? { state }
+    func save(_ state: StoredRadarState) async throws { self.state = state }
+}
+
 private func require(_ condition: @autoclosure () -> Bool, _ message: String) {
     guard condition() else {
         fatalError("Verification failed: \(message)")
@@ -26,4 +50,49 @@ require(
     "weighted overall ranking"
 )
 
-print("✓ Core model and ranking verification passed")
+require(MetricFormatter.detailValue(2.429979, metric: .cost) == "$2.43", "cost formatting")
+require(MetricFormatter.menuBarValue(5_103, metric: .duration) == "1.4h", "duration formatting")
+require(MetricFormatter.compactModelName("GPT-5.6 Sol xhigh") == "5.6 Sol xh", "compact model name")
+
+let settingsVerified = await MainActor.run {
+    let suite = "CoreVerification.\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suite)!
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let settings = AppSettings(defaults: defaults)
+    let rejectedInvalid = !settings.apply(weights: RankingWeights(iq: 80, cost: 20, duration: 20))
+    let acceptedValid = settings.apply(weights: RankingWeights(iq: 70, cost: 20, duration: 10))
+    return rejectedInvalid && acceptedValid && settings.rankingWeights.iq == 70
+}
+require(settingsVerified, "settings validation")
+
+let fetchedAt = Date(timeIntervalSince1970: 1_700_000_000)
+let snapshot = RadarSnapshot(
+    schemaVersion: response.schemaVersion,
+    sourceMonitoredAt: response.monitoredAt,
+    fetchedAt: fetchedAt,
+    benchmarks: response.benchmarks,
+    validators: CacheValidators(etag: "fixture-etag", lastModified: "fixture-date")
+)
+let temporaryDirectory = FileManager.default.temporaryDirectory
+    .appendingPathComponent("ShowCodexIQ-\(UUID().uuidString)", isDirectory: true)
+let diskStore = SnapshotStore(fileURL: temporaryDirectory.appendingPathComponent("latest.json"))
+let stored = StoredRadarState(
+    snapshot: snapshot,
+    costHistory: CostHistoryBuilder.merging([], benchmarks: snapshot.benchmarks, recordedAt: fetchedAt)
+)
+try await diskStore.save(stored)
+let loadedState = try await diskStore.load()
+require(loadedState == stored, "snapshot round trip")
+try? FileManager.default.removeItem(at: temporaryDirectory)
+
+let client = VerificationRadarClient(result: .modified(snapshot))
+let memoryStore = VerificationSnapshotStore()
+let repository = RadarRepository(client: client, store: memoryStore)
+async let firstRefresh = repository.refresh()
+async let secondRefresh = repository.refresh()
+let refreshStates = await [firstRefresh, secondRefresh]
+require(refreshStates.allSatisfy { $0.snapshot?.benchmarks.count == 3 }, "repository refresh")
+let clientCalls = await client.callCount()
+require(clientCalls == 1, "single-flight refresh")
+
+print("✓ Core model, ranking, cache, settings, and repository verification passed")

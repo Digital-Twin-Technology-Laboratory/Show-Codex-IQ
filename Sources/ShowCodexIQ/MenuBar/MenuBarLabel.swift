@@ -6,28 +6,41 @@ struct MenuBarLabel: View {
 
     var body: some View {
         if appModel.menuBarRanking.count == 2 {
-            VStack(alignment: .leading, spacing: -1) {
-                ForEach(appModel.menuBarRanking) { ranked in
-                    HStack(spacing: 3) {
-                        Text("\(ranked.position)")
-                            .foregroundStyle(.secondary)
-                        Text(MetricFormatter.compactModelName(ranked.benchmark.label))
-                            .lineLimit(1)
-                        Text(MetricFormatter.menuBarValue(ranked.value, metric: ranked.metric))
-                            .monospacedDigit()
-                            .foregroundStyle(.secondary)
+            HStack(spacing: 4) {
+                Image(systemName: appModel.settings.menuBarMetric.systemImage)
+                    .font(.system(size: 15, weight: .medium))
+                    .symbolRenderingMode(.monochrome)
+                    .frame(width: 18, height: 18)
+
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(appModel.menuBarRanking) { ranked in
+                        HStack(spacing: 3) {
+                            Text("#\(ranked.position) \(MetricFormatter.compactModelName(ranked.benchmark.label))")
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.75)
+                            Spacer(minLength: 2)
+                            Text(MetricFormatter.menuBarValue(ranked.value, metric: ranked.metric))
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }
+            .padding(.horizontal, 5)
+            .padding(.vertical, 1)
             .font(.system(size: 9, weight: .semibold, design: .rounded))
-            .fixedSize()
+            .foregroundStyle(Color(nsColor: .labelColor))
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(accessibilitySummary)
         } else if appModel.isInitialLoading || appModel.isRefreshing {
-            Label("Codex IQ", systemImage: "brain.head.profile")
+            Label("正在刷新", systemImage: "brain.head.profile")
+                .font(.system(size: 10, weight: .medium))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .accessibilityLabel("正在刷新 Codex 模型数据")
         } else {
-            Label("Codex IQ !", systemImage: "exclamationmark.triangle")
+            Label("数据不可用", systemImage: "exclamationmark.triangle")
+                .font(.system(size: 10, weight: .medium))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .accessibilityLabel("Codex 模型数据不可用")
         }
     }

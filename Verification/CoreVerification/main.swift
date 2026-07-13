@@ -65,6 +65,16 @@ let settingsVerified = await MainActor.run {
 }
 require(settingsVerified, "settings validation")
 
+let trendModelIDs = RankingEngine.rank(response.benchmarks, by: .iq).prefix(3).map(\.id)
+let iqTrend = TrendPointBuilder.points(
+    benchmarks: response.benchmarks,
+    costHistory: [],
+    metric: .iq,
+    modelIDs: trendModelIDs
+)
+require(TrendPointBuilder.hasDrawableSeries(iqTrend), "remote IQ trend")
+require(TrendPointBuilder.shortDateLabel("2026-07-13-pm_2") == "07/13 PM", "trend date label")
+
 let fetchedAt = Date(timeIntervalSince1970: 1_700_000_000)
 let snapshot = RadarSnapshot(
     schemaVersion: response.schemaVersion,

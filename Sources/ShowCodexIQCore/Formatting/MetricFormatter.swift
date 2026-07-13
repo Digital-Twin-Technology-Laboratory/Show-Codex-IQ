@@ -28,7 +28,8 @@ public enum MetricFormatter {
 
     public static func compactModelName(_ label: String) -> String {
         label
-            .replacingOccurrences(of: "GPT-", with: "")
+            .replacingOccurrences(of: "GPT-", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "-", with: " ")
             .replacingOccurrences(of: " medium", with: " med")
             .replacingOccurrences(of: " xhigh", with: " xh")
             .replacingOccurrences(of: " high", with: " hi")

@@ -12,7 +12,9 @@ final class AppSettingsTests: XCTestCase {
 
         XCTAssertEqual(settings.menuBarMetric, .iq)
         XCTAssertEqual(settings.menuBarRankStyle, .hidden)
+        XCTAssertTrue(settings.showsMenuBarIcon)
         XCTAssertFalse(settings.showsMenuBarDetails)
+        XCTAssertTrue(settings.menuBarModelAliases.isEmpty)
         XCTAssertTrue(settings.showsTrendChart)
         XCTAssertTrue(settings.automaticRefreshEnabled)
         XCTAssertEqual(settings.refreshInterval, .thirtyMinutes)
@@ -29,14 +31,35 @@ final class AppSettingsTests: XCTestCase {
 
         let settings = AppSettings(defaults: defaults)
         settings.menuBarRankStyle = .ideographicComma
+        settings.showsMenuBarIcon = false
         settings.showsMenuBarDetails = true
         settings.showsTrendChart = false
+        settings.setMenuBarModelAlias("  Sol xh  ", for: "gpt_56_sol_xhigh")
 
         let restored = AppSettings(defaults: defaults)
         XCTAssertEqual(restored.menuBarRankStyle, .ideographicComma)
+        XCTAssertFalse(restored.showsMenuBarIcon)
         XCTAssertTrue(restored.showsMenuBarDetails)
         XCTAssertFalse(restored.showsTrendChart)
         XCTAssertEqual(restored.menuBarRankStyle.prefix(for: 2), "2、")
+        XCTAssertEqual(restored.menuBarModelAlias(for: "gpt_56_sol_xhigh"), "Sol xh")
+        XCTAssertEqual(
+            restored.menuBarModelName(
+                modelID: "gpt_56_sol_xhigh",
+                fullName: "GPT-5.6 Sol xhigh"
+            ),
+            "Sol xh"
+        )
+
+        restored.setMenuBarModelAlias(" \n ", for: "gpt_56_sol_xhigh")
+        XCTAssertEqual(restored.menuBarModelAlias(for: "gpt_56_sol_xhigh"), "")
+        XCTAssertEqual(
+            restored.menuBarModelName(
+                modelID: "gpt_56_sol_xhigh",
+                fullName: "GPT-5.6 Sol xhigh"
+            ),
+            "5.6 Sol xh"
+        )
     }
 
     func testInvalidStoredValuesMigrateToDefaults() {

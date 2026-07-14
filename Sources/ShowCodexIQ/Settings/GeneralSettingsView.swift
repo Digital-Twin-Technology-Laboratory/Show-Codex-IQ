@@ -5,9 +5,14 @@ struct GeneralSettingsView: View {
     @Bindable var appModel: AppModel
     @StateObject private var weights: WeightDraft
     @StateObject private var launchAtLogin = LaunchAtLoginController()
+    let onOpenMenuBarAliases: () -> Void
 
-    init(appModel: AppModel) {
+    init(
+        appModel: AppModel,
+        onOpenMenuBarAliases: @escaping () -> Void = {}
+    ) {
         self.appModel = appModel
+        self.onOpenMenuBarAliases = onOpenMenuBarAliases
         _weights = StateObject(wrappedValue: WeightDraft(weights: appModel.settings.rankingWeights))
     }
 
@@ -28,7 +33,25 @@ struct GeneralSettingsView: View {
                     }
                 }
 
+                Toggle("显示左侧图标", isOn: showsMenuBarIconBinding)
                 Toggle("显示后方详细数值", isOn: showsMenuBarDetailsBinding)
+
+                Button(action: onOpenMenuBarAliases) {
+                    HStack {
+                        Text("模型名称简称")
+                        Spacer()
+                        Text(configuredAliasSummary)
+                            .foregroundStyle(.secondary)
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .contentShape(Rectangle())
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("打开模型名称简称设置")
+
                 Toggle("显示展开面板趋势图", isOn: showsTrendChartBinding)
             }
 
@@ -123,6 +146,13 @@ struct GeneralSettingsView: View {
         )
     }
 
+    private var showsMenuBarIconBinding: Binding<Bool> {
+        Binding(
+            get: { appModel.settings.showsMenuBarIcon },
+            set: { appModel.settings.showsMenuBarIcon = $0 }
+        )
+    }
+
     private var showsTrendChartBinding: Binding<Bool> {
         Binding(
             get: { appModel.settings.showsTrendChart },
@@ -152,6 +182,11 @@ struct GeneralSettingsView: View {
 
     private func applyWeights() {
         _ = appModel.settings.apply(weights: weights.weights)
+    }
+
+    private var configuredAliasSummary: String {
+        let count = appModel.settings.menuBarModelAliases.count
+        return count == 0 ? "未设置" : "已设置 \(count) 个"
     }
 }
 

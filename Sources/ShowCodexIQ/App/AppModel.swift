@@ -42,6 +42,12 @@ final class AppModel {
         snapshot?.benchmarks.compactMap(\.latest?.date).max()
     }
 
+    var availableModels: [ModelBenchmark] {
+        (snapshot?.benchmarks ?? []).sorted {
+            $0.label.localizedStandardCompare($1.label) == .orderedAscending
+        }
+    }
+
     var menuBarRanking: [RankedModel] {
         rankings(for: settings.menuBarMetric).prefix(2).map { $0 }
     }

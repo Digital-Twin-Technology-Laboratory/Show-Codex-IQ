@@ -63,8 +63,16 @@ public final class AppSettings {
         didSet { defaults.set(menuBarRankStyle.rawValue, forKey: Keys.menuBarRankStyle) }
     }
 
+    public var showsMenuBarIcon: Bool {
+        didSet { defaults.set(showsMenuBarIcon, forKey: Keys.showsMenuBarIcon) }
+    }
+
     public var showsMenuBarDetails: Bool {
         didSet { defaults.set(showsMenuBarDetails, forKey: Keys.showsMenuBarDetails) }
+    }
+
+    public private(set) var menuBarModelAliases: [String: String] {
+        didSet { defaults.set(menuBarModelAliases, forKey: Keys.menuBarModelAliases) }
     }
 
     public var showsTrendChart: Bool {
@@ -90,7 +98,19 @@ public final class AppSettings {
         menuBarRankStyle = MenuBarRankStyle(
             rawValue: defaults.string(forKey: Keys.menuBarRankStyle) ?? ""
         ) ?? .hidden
+
+        if defaults.object(forKey: Keys.showsMenuBarIcon) == nil {
+            showsMenuBarIcon = true
+        } else {
+            showsMenuBarIcon = defaults.bool(forKey: Keys.showsMenuBarIcon)
+        }
+
         showsMenuBarDetails = defaults.bool(forKey: Keys.showsMenuBarDetails)
+        let storedAliases = defaults.dictionary(forKey: Keys.menuBarModelAliases)?
+            .compactMapValues { $0 as? String } ?? [:]
+        menuBarModelAliases = Self.sanitizedAliases(
+            storedAliases
+        )
 
         if defaults.object(forKey: Keys.showsTrendChart) == nil {
             showsTrendChart = true
@@ -129,10 +149,41 @@ public final class AppSettings {
         _ = apply(weights: .default)
     }
 
+    public func menuBarModelAlias(for modelID: String) -> String {
+        menuBarModelAliases[modelID] ?? ""
+    }
+
+    public func setMenuBarModelAlias(_ alias: String, for modelID: String) {
+        let trimmed = alias.trimmingCharacters(in: .whitespacesAndNewlines)
+        var updatedAliases = menuBarModelAliases
+        if trimmed.isEmpty {
+            updatedAliases.removeValue(forKey: modelID)
+        } else {
+            updatedAliases[modelID] = alias
+        }
+        menuBarModelAliases = updatedAliases
+    }
+
+    public func menuBarModelName(modelID: String, fullName: String) -> String {
+        menuBarModelAliases[modelID]?.trimmingCharacters(in: .whitespacesAndNewlines)
+            ?? MetricFormatter.compactModelName(fullName)
+    }
+
+    private static func sanitizedAliases(_ aliases: [String: String]) -> [String: String] {
+        aliases.reduce(into: [:]) { result, entry in
+            let trimmed = entry.value.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                result[entry.key] = trimmed
+            }
+        }
+    }
+
     private enum Keys {
         static let menuBarMetric = "menuBarMetric"
         static let menuBarRankStyle = "menuBarRankStyle"
+        static let showsMenuBarIcon = "showsMenuBarIcon"
         static let showsMenuBarDetails = "showsMenuBarDetails"
+        static let menuBarModelAliases = "menuBarModelAliases"
         static let showsTrendChart = "showsTrendChart"
         static let automaticRefreshEnabled = "automaticRefreshEnabled"
         static let refreshInterval = "refreshIntervalMinutes"

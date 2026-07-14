@@ -7,12 +7,14 @@ final class StatusItemController: NSObject {
     private let statusView: MenuBarStatusView
     private let popover: NSPopover
     private let appModel: AppModel
+    private let dashboardLayoutState: DashboardLayoutState
 
     init(appModel: AppModel) {
         self.appModel = appModel
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusView = MenuBarStatusView(appModel: appModel)
         popover = NSPopover()
+        dashboardLayoutState = DashboardLayoutState()
         super.init()
 
         configureStatusItem()
@@ -23,41 +25,47 @@ final class StatusItemController: NSObject {
         statusView.onClick = { [weak self] in
             self?.togglePopover()
         }
+        statusView.onPreferredWidthChange = { [weak self] width in
+            self?.updateStatusItemLength(to: width)
+        }
         statusItem.view = statusView
-        updateStatusItemLength()
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(settingsDidChange),
-            name: UserDefaults.didChangeNotification,
-            object: nil
-        )
+        updateStatusItemLength(to: statusView.intrinsicContentSize.width)
     }
 
-    @objc private func settingsDidChange() {
-        updateStatusItemLength()
-        updatePopoverSize()
-    }
-
-    private func updateStatusItemLength() {
-        statusView.invalidateIntrinsicContentSize()
-        statusItem.length = statusView.intrinsicContentSize.width
+    private func updateStatusItemLength(to width: CGFloat) {
+        let resolvedWidth = ceil(max(1, width))
+        if statusItem.length != resolvedWidth {
+            statusItem.length = resolvedWidth
+        }
     }
 
     private func configurePopover(appModel: AppModel) {
         popover.behavior = .transient
         popover.animates = true
         popover.contentViewController = NSHostingController(
-            rootView: DashboardView(appModel: appModel)
+            rootView: DashboardView(
+                appModel: appModel,
+                layoutState: dashboardLayoutState,
+                onPreferredHeightChange: { [weak self] height in
+                    self?.updatePopoverHeight(to: height)
+                }
+            )
         )
-        updatePopoverSize()
+        updateMaximumPopoverHeight()
     }
 
-    private func updatePopoverSize() {
-        let size = DashboardLayout.popoverSize(
-            showsTrendChart: appModel.settings.showsTrendChart
-        )
+    private func updatePopoverHeight(to height: CGFloat) {
+        let size = NSSize(width: DashboardLayout.width, height: ceil(height))
         if popover.contentSize != size {
             popover.contentSize = size
+        }
+    }
+
+    private func updateMaximumPopoverHeight() {
+        let screen = statusView.window?.screen ?? NSScreen.main
+        dashboardLayoutState.maximumHeight = DashboardLayout.maximumHeight(for: screen)
+        if popover.contentSize.height > dashboardLayoutState.maximumHeight {
+            updatePopoverHeight(to: dashboardLayoutState.maximumHeight)
         }
     }
 
@@ -65,7 +73,7 @@ final class StatusItemController: NSObject {
         if popover.isShown {
             popover.performClose(nil)
         } else {
-            updatePopoverSize()
+            updateMaximumPopoverHeight()
             NSApplication.shared.activate(ignoringOtherApps: true)
             popover.show(relativeTo: statusView.bounds, of: statusView, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
@@ -76,14 +84,19 @@ final class StatusItemController: NSObject {
 @MainActor
 private final class MenuBarStatusView: NSView {
     var onClick: (() -> Void)?
-    private let appModel: AppModel
+    var onPreferredWidthChange: ((CGFloat) -> Void)?
+    private var preferredWidth: CGFloat = 62
 
     init(appModel: AppModel) {
-        self.appModel = appModel
         super.init(frame: NSRect(x: 0, y: 0, width: 94, height: 22))
 
         let hostingView = NSHostingView(
-            rootView: MenuBarLabel(appModel: appModel)
+            rootView: MenuBarLabel(
+                appModel: appModel,
+                onPreferredWidthChange: { [weak self] width in
+                    self?.contentWidthDidChange(width)
+                }
+            )
                 .frame(height: 22)
                 .contentShape(Rectangle())
                 .allowsHitTesting(false)
@@ -108,14 +121,15 @@ private final class MenuBarStatusView: NSView {
     }
 
     override var intrinsicContentSize: NSSize {
-        var width: CGFloat = 94
-        if appModel.settings.menuBarRankStyle != .hidden {
-            width += 14
-        }
-        if appModel.settings.showsMenuBarDetails {
-            width += 38
-        }
-        return NSSize(width: width, height: 22)
+        NSSize(width: preferredWidth, height: 22)
+    }
+
+    private func contentWidthDidChange(_ width: CGFloat) {
+        let resolvedWidth = ceil(max(1, width))
+        guard preferredWidth != resolvedWidth else { return }
+        preferredWidth = resolvedWidth
+        invalidateIntrinsicContentSize()
+        onPreferredWidthChange?(resolvedWidth)
     }
 
     override func hitTest(_ point: NSPoint) -> NSView? {

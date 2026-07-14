@@ -6,6 +6,22 @@
 
 ## [Unreleased]
 
+## [0.1.0-beta.5] - 2026-07-15
+
+### Added
+
+- 新增菜单栏左侧图标开关，可进一步减少横向占用。
+- 新增模型简称二级设置页，可为每个模型分别配置仅在菜单栏生效的简称。
+
+### Changed
+
+- 菜单栏改为按实际图标、名称、序号与数值内容自适应宽度，移除右侧硬编码留白并缩小内部间距。
+- 菜单栏弹窗改为按内容自适应高度；仅在超过当前屏幕可用区域或 760pt 上限时滚动。
+
+### Fixed
+
+- 简称二级设置页使用独立页头与返回操作，修复返回按钮被错误提升为大型标签工具栏项、无法正常返回首页的问题，并支持按 Esc 返回。
+
 ## [0.1.0-beta.4] - 2026-07-14
 
 ### Fixed
@@ -101,7 +117,8 @@
 
 - 完善缺失指标、未知字段和并列排名的容错行为。
 
-[Unreleased]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/compare/v0.1.0-beta.4...HEAD
+[Unreleased]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/compare/v0.1.0-beta.5...HEAD
+[0.1.0-beta.5]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/compare/v0.1.0-beta.4...v0.1.0-beta.5
 [0.1.0-beta.4]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/releases/tag/v0.1.0-beta.4
 [0.1.0-beta.3]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/releases/tag/v0.1.0-beta.3
 [0.1.0-beta.2]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/releases/tag/v0.1.0-beta.2

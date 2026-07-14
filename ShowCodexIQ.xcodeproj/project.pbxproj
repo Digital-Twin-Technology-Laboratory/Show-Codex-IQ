@@ -20,6 +20,7 @@
 		4365E8583C4554DD8DEA49FE /* SmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED19784C2851446B77745AD /* SmokeTests.swift */; };
 		4427130652D6DE8F3EB83619 /* StatusHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CE4A63E03BB09A71B24338B /* StatusHeaderView.swift */; };
 		48B241F2C3F8CE36EF4EC28E /* AppSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E17B1B44983E6C5F3F07980D /* AppSettingsTests.swift */; };
+		4C9127D811C2B88B1BE2D8D8 /* MenuBarAliasesSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26ACF628B8C76C076EBCD75C /* MenuBarAliasesSettingsView.swift */; };
 		502B46C7BF63F966AC5AC4B3 /* RadarRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D1EE05A6CA04FA73897026C /* RadarRepository.swift */; };
 		51553AB405A588950C3F1D37 /* AdaptiveVisualStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63D00B6743F7BF323741C6E0 /* AdaptiveVisualStyle.swift */; };
 		59C8C83AC873B7D72066DC67 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A056628ACDD0C197229BF5F /* SettingsView.swift */; };
@@ -80,6 +81,7 @@
 		0FB876085B1F6769E393BCA7 /* TrendChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendChartView.swift; sourceTree = "<group>"; };
 		165DCE019744F79E0C5471C0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		18AE050EE9F3FCC08476E0F8 /* GeneralSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralSettingsView.swift; sourceTree = "<group>"; };
+		26ACF628B8C76C076EBCD75C /* MenuBarAliasesSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarAliasesSettingsView.swift; sourceTree = "<group>"; };
 		298FDC7E633DC37FF94A1F09 /* MetricStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricStyle.swift; sourceTree = "<group>"; };
 		2C587F17328D2A34AC08F609 /* ShowCodexIQIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = ShowCodexIQIcon.icon; sourceTree = "<group>"; };
 		2D1EE05A6CA04FA73897026C /* RadarRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarRepository.swift; sourceTree = "<group>"; };
@@ -260,6 +262,7 @@
 				DCA883D9E04141FDB7E69232 /* AboutView.swift */,
 				18AE050EE9F3FCC08476E0F8 /* GeneralSettingsView.swift */,
 				0982597F0422F11BDD5139AD /* LaunchAtLoginController.swift */,
+				26ACF628B8C76C076EBCD75C /* MenuBarAliasesSettingsView.swift */,
 				4A056628ACDD0C197229BF5F /* SettingsView.swift */,
 				A00D51FD26307CD89A3A21C4 /* WeightDistributionSlider.swift */,
 				2D75EE4E72EF0C4620E28A6C /* WeightDraft.swift */,
@@ -521,6 +524,7 @@
 				EC70CCD3C79EAA1CACC30C56 /* EmptyStateView.swift in Sources */,
 				A14474D8162144F455EBE3CB /* GeneralSettingsView.swift in Sources */,
 				23EB4B314830D05A4688115A /* LaunchAtLoginController.swift in Sources */,
+				4C9127D811C2B88B1BE2D8D8 /* MenuBarAliasesSettingsView.swift in Sources */,
 				79484E919A573D1416D8D29F /* MenuBarLabel.swift in Sources */,
 				5FB1CE276EB27CB6A83C4A52 /* MetricStyle.swift in Sources */,
 				CE26BC4E3C11EC05211B8F3F /* RankRow.swift in Sources */,

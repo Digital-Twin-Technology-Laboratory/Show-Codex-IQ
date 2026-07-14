@@ -4,16 +4,27 @@ import SwiftUI
 
 struct DashboardView: View {
     @Bindable var appModel: AppModel
+    @Bindable var layoutState: DashboardLayoutState
     @StateObject private var interaction = DashboardInteractionState()
+    @State private var measuredContentHeight: CGFloat = 0
+    @State private var measuredFooterHeight: CGFloat = 0
     @Namespace private var rankingNamespace
+    let onPreferredHeightChange: (CGFloat) -> Void
 
     private let columns = [
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10)
     ]
 
-    init(appModel: AppModel, initiallyExpandedMetric: RankingMetric? = nil) {
+    init(
+        appModel: AppModel,
+        layoutState: DashboardLayoutState = DashboardLayoutState(),
+        initiallyExpandedMetric: RankingMetric? = nil,
+        onPreferredHeightChange: @escaping (CGFloat) -> Void = { _ in }
+    ) {
         self.appModel = appModel
+        self.layoutState = layoutState
+        self.onPreferredHeightChange = onPreferredHeightChange
         _interaction = StateObject(
             wrappedValue: DashboardInteractionState(expandedMetric: initiallyExpandedMetric)
         )
@@ -21,44 +32,33 @@ struct DashboardView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if appModel.snapshot == nil, !appModel.isInitialLoading {
-                RadarEmptyStateView(appModel: appModel)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                ScrollView {
-                    VStack(spacing: 12) {
-                        StatusHeaderView(appModel: appModel)
-
-                        if let error = appModel.errorMessage {
-                            Label(error, systemImage: "exclamationmark.triangle.fill")
-                                .font(.caption)
-                                .foregroundStyle(.orange)
-                                .padding(8)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(.orange.opacity(0.09), in: RoundedRectangle(cornerRadius: 8))
-                        }
-
-                        rankingCards
-
-                        if appModel.settings.showsTrendChart {
-                            TrendChartView(appModel: appModel)
+            ScrollView {
+                dashboardContent
+                    .background {
+                        GeometryReader { geometry in
+                            Color.clear.preference(
+                                key: DashboardContentHeightPreferenceKey.self,
+                                value: geometry.size.height
+                            )
                         }
                     }
-                    .padding(14)
-                }
             }
+            .scrollIndicators(isContentClipped ? .automatic : .hidden)
 
             Divider()
             footer
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
+                .background {
+                    GeometryReader { geometry in
+                        Color.clear.preference(
+                            key: DashboardFooterHeightPreferenceKey.self,
+                            value: geometry.size.height
+                        )
+                    }
+                }
         }
-        .frame(
-            width: DashboardLayout.width,
-            height: DashboardLayout.height(
-                showsTrendChart: appModel.settings.showsTrendChart
-            )
-        )
+        .frame(width: DashboardLayout.width, height: resolvedHeight)
         .background {
             ZStack {
                 Rectangle().fill(.ultraThinMaterial)
@@ -73,6 +73,59 @@ struct DashboardView: View {
         .onAppear {
             Task { await appModel.refreshIfNeeded() }
         }
+        .onPreferenceChange(DashboardContentHeightPreferenceKey.self) { height in
+            measuredContentHeight = height
+        }
+        .onPreferenceChange(DashboardFooterHeightPreferenceKey.self) { height in
+            measuredFooterHeight = height
+        }
+        .onChange(of: resolvedHeight, initial: true) { _, height in
+            onPreferredHeightChange(height)
+        }
+    }
+
+    @ViewBuilder
+    private var dashboardContent: some View {
+        if appModel.snapshot == nil, !appModel.isInitialLoading {
+            RadarEmptyStateView(appModel: appModel)
+                .frame(maxWidth: .infinity, minHeight: DashboardLayout.emptyContentHeight)
+                .padding(14)
+        } else {
+            VStack(spacing: 12) {
+                StatusHeaderView(appModel: appModel)
+
+                if let error = appModel.errorMessage {
+                    Label(error, systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(.orange.opacity(0.09), in: RoundedRectangle(cornerRadius: 8))
+                }
+
+                rankingCards
+
+                if appModel.settings.showsTrendChart {
+                    TrendChartView(appModel: appModel)
+                }
+            }
+            .padding(14)
+        }
+    }
+
+    private var idealHeight: CGFloat {
+        measuredContentHeight + measuredFooterHeight + 1
+    }
+
+    private var resolvedHeight: CGFloat {
+        min(
+            layoutState.maximumHeight,
+            max(DashboardLayout.minimumHeight, idealHeight)
+        )
+    }
+
+    private var isContentClipped: Bool {
+        idealHeight > layoutState.maximumHeight + 0.5
     }
 
     @ViewBuilder
@@ -158,6 +211,22 @@ struct DashboardView: View {
             .controlSize(.small)
             .help("退出 Show Codex IQ")
         }
+    }
+}
+
+private struct DashboardContentHeightPreferenceKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+private struct DashboardFooterHeightPreferenceKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }
 

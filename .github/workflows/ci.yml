@@ -6,7 +6,9 @@ on:
 
 jobs:
   test:
-    runs-on: macos-15
+    # Liquid Glass APIs require the macOS 26 SDK even though the app keeps a
+    # macOS 14 deployment target and provides runtime fallbacks there.
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
 

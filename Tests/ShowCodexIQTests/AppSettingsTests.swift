@@ -13,6 +13,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(settings.menuBarMetric, .iq)
         XCTAssertEqual(settings.menuBarRankStyle, .hidden)
         XCTAssertFalse(settings.showsMenuBarDetails)
+        XCTAssertTrue(settings.showsTrendChart)
         XCTAssertTrue(settings.automaticRefreshEnabled)
         XCTAssertEqual(settings.refreshInterval, .thirtyMinutes)
         XCTAssertEqual(settings.rankingWeights, .default)
@@ -29,10 +30,12 @@ final class AppSettingsTests: XCTestCase {
         let settings = AppSettings(defaults: defaults)
         settings.menuBarRankStyle = .ideographicComma
         settings.showsMenuBarDetails = true
+        settings.showsTrendChart = false
 
         let restored = AppSettings(defaults: defaults)
         XCTAssertEqual(restored.menuBarRankStyle, .ideographicComma)
         XCTAssertTrue(restored.showsMenuBarDetails)
+        XCTAssertFalse(restored.showsTrendChart)
         XCTAssertEqual(restored.menuBarRankStyle.prefix(for: 2), "2、")
     }
 

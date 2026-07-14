@@ -29,6 +29,7 @@ struct GeneralSettingsView: View {
                 }
 
                 Toggle("显示后方详细数值", isOn: showsMenuBarDetailsBinding)
+                Toggle("显示展开面板趋势图", isOn: showsTrendChartBinding)
             }
 
             Section("数据刷新") {
@@ -42,17 +43,20 @@ struct GeneralSettingsView: View {
             }
 
             Section {
-                WeightInputRow(title: "智商", systemImage: "brain.head.profile", value: $weights.iq)
-                WeightInputRow(title: "费用", systemImage: "dollarsign.circle", value: $weights.cost)
-                WeightInputRow(title: "耗时", systemImage: "clock", value: $weights.duration)
+                WeightDistributionSummary(weights: weights.weights)
 
-                HStack {
-                    Text("当前合计")
-                    Spacer()
-                    Text("\(weights.total)%")
-                        .monospacedDigit()
-                        .foregroundStyle(weights.isValid ? .green : .red)
-                }
+                WeightDistributionSlider(
+                    firstBoundary: weights.firstBoundary,
+                    secondBoundary: weights.secondBoundary,
+                    onFirstBoundaryChange: { value in
+                        weights.updateFirstBoundary(to: value)
+                        applyWeights()
+                    },
+                    onSecondBoundaryChange: { value in
+                        weights.updateSecondBoundary(to: value)
+                        applyWeights()
+                    }
+                )
 
                 HStack {
                     Button("恢复 50 / 25 / 25") {
@@ -60,16 +64,15 @@ struct GeneralSettingsView: View {
                         applyWeights()
                     }
                     Spacer()
-                    Button("应用权重") {
-                        applyWeights()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(!weights.isValid)
+                    Text("合计 100%")
+                        .font(.caption)
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
                 }
             } header: {
                 Text("综合排名权重")
             } footer: {
-                Text("三项必须合计 100%；调整后立即重新计算，不需要刷新数据。")
+                Text("拖动两个分隔点调整三项占比；合计始终为 100%，调整后立即重新计算。")
             }
 
             Section("系统") {
@@ -120,6 +123,13 @@ struct GeneralSettingsView: View {
         )
     }
 
+    private var showsTrendChartBinding: Binding<Bool> {
+        Binding(
+            get: { appModel.settings.showsTrendChart },
+            set: { appModel.settings.showsTrendChart = $0 }
+        )
+    }
+
     private var refreshIntervalBinding: Binding<RefreshInterval> {
         Binding(
             get: { appModel.settings.refreshInterval },
@@ -145,25 +155,51 @@ struct GeneralSettingsView: View {
     }
 }
 
-private struct WeightInputRow: View {
-    let title: String
-    let systemImage: String
-    @Binding var value: Int
+private struct WeightDistributionSummary: View {
+    let weights: RankingWeights
 
     var body: some View {
-        HStack {
-            Label(title, systemImage: systemImage)
-            Spacer()
-            TextField("", value: $value, format: .number)
-                .textFieldStyle(.roundedBorder)
-                .multilineTextAlignment(.trailing)
-                .monospacedDigit()
-                .frame(width: 52)
-                .accessibilityLabel("\(title)权重")
-            Text("%")
-                .foregroundStyle(.secondary)
-            Stepper("\(title)权重", value: $value, in: 0...100, step: 1)
-                .labelsHidden()
+        HStack(spacing: 10) {
+            WeightValueLabel(
+                title: "智商",
+                systemImage: "brain.head.profile",
+                value: weights.iq,
+                color: .blue
+            )
+            WeightValueLabel(
+                title: "费用",
+                systemImage: "dollarsign.circle",
+                value: weights.cost,
+                color: .green
+            )
+            WeightValueLabel(
+                title: "耗时",
+                systemImage: "clock",
+                value: weights.duration,
+                color: .orange
+            )
         }
+    }
+}
+
+private struct WeightValueLabel: View {
+    let title: String
+    let systemImage: String
+    let value: Int
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Image(systemName: systemImage)
+                .foregroundStyle(color)
+            Text(title)
+            Spacer(minLength: 4)
+            Text("\(value)%")
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+        }
+        .font(.caption)
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
     }
 }

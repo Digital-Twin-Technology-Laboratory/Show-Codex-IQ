@@ -40,6 +40,19 @@ public struct RankingWeights: Codable, Hashable, Sendable {
         self.duration = duration
     }
 
+    public init(firstBoundary: Int, secondBoundary: Int) {
+        let clampedFirst = min(max(firstBoundary, 0), 100)
+        let clampedSecond = min(max(secondBoundary, clampedFirst), 100)
+        self.init(
+            iq: clampedFirst,
+            cost: clampedSecond - clampedFirst,
+            duration: 100 - clampedSecond
+        )
+    }
+
+    public var firstBoundary: Int { iq }
+    public var secondBoundary: Int { iq + cost }
+
     public var total: Int { iq + cost + duration }
 
     public var isValid: Bool {

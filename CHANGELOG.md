@@ -6,8 +6,18 @@
 
 ## [Unreleased]
 
+## [0.1.0-beta.2] - 2026-07-14
+
+第二个公开预发布版本，重点优化菜单栏展开面板与综合排名权重设置。
+
+### Added
+
+- 新增“显示展开面板趋势图”设置，可按需隐藏菜单栏展开后的趋势图；升级后默认保持显示。
+
 ### Changed
 
+- 将三个独立权重输入框改为三段式双滑块，三项权重始终合计 100%，拖动时立即保存并重新计算综合排名。
+- 权重滑块新增颜色区分、实时百分比与辅助功能增减操作，并保留 50 / 25 / 25 一键恢复。
 - README 新增真实应用截图、未公证构建的安全警告说明及 Apple 官方首次打开步骤。
 
 ## [0.1.0-beta.1] - 2026-07-14
@@ -71,5 +81,6 @@
 
 - 完善缺失指标、未知字段和并列排名的容错行为。
 
-[Unreleased]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/compare/v0.1.0-beta.1...HEAD
+[Unreleased]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/compare/v0.1.0-beta.2...HEAD
+[0.1.0-beta.2]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/releases/tag/v0.1.0-beta.2
 [0.1.0-beta.1]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/releases/tag/v0.1.0-beta.1

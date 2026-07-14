@@ -67,6 +67,10 @@ public final class AppSettings {
         didSet { defaults.set(showsMenuBarDetails, forKey: Keys.showsMenuBarDetails) }
     }
 
+    public var showsTrendChart: Bool {
+        didSet { defaults.set(showsTrendChart, forKey: Keys.showsTrendChart) }
+    }
+
     public var refreshInterval: RefreshInterval {
         didSet { defaults.set(refreshInterval.rawValue, forKey: Keys.refreshInterval) }
     }
@@ -87,6 +91,12 @@ public final class AppSettings {
             rawValue: defaults.string(forKey: Keys.menuBarRankStyle) ?? ""
         ) ?? .hidden
         showsMenuBarDetails = defaults.bool(forKey: Keys.showsMenuBarDetails)
+
+        if defaults.object(forKey: Keys.showsTrendChart) == nil {
+            showsTrendChart = true
+        } else {
+            showsTrendChart = defaults.bool(forKey: Keys.showsTrendChart)
+        }
 
         if defaults.object(forKey: Keys.automaticRefreshEnabled) == nil {
             automaticRefreshEnabled = true
@@ -123,6 +133,7 @@ public final class AppSettings {
         static let menuBarMetric = "menuBarMetric"
         static let menuBarRankStyle = "menuBarRankStyle"
         static let showsMenuBarDetails = "showsMenuBarDetails"
+        static let showsTrendChart = "showsTrendChart"
         static let automaticRefreshEnabled = "automaticRefreshEnabled"
         static let refreshInterval = "refreshIntervalMinutes"
         static let iqWeight = "rankingWeightIQ"

@@ -3,26 +3,32 @@ import ShowCodexIQCore
 
 @MainActor
 final class WeightDraft: ObservableObject {
-    @Published var iq: Int
-    @Published var cost: Int
-    @Published var duration: Int
+    @Published private(set) var firstBoundary: Int
+    @Published private(set) var secondBoundary: Int
 
     init(weights: RankingWeights) {
-        iq = weights.iq
-        cost = weights.cost
-        duration = weights.duration
+        let partition = RankingWeights(
+            firstBoundary: weights.firstBoundary,
+            secondBoundary: weights.secondBoundary
+        )
+        firstBoundary = partition.firstBoundary
+        secondBoundary = partition.secondBoundary
     }
 
     var weights: RankingWeights {
-        RankingWeights(iq: iq, cost: cost, duration: duration)
+        RankingWeights(firstBoundary: firstBoundary, secondBoundary: secondBoundary)
     }
 
-    var total: Int { iq + cost + duration }
-    var isValid: Bool { weights.isValid }
+    func updateFirstBoundary(to value: Int) {
+        firstBoundary = min(max(value, 0), secondBoundary)
+    }
+
+    func updateSecondBoundary(to value: Int) {
+        secondBoundary = min(max(value, firstBoundary), 100)
+    }
 
     func reset() {
-        iq = RankingWeights.default.iq
-        cost = RankingWeights.default.cost
-        duration = RankingWeights.default.duration
+        firstBoundary = RankingWeights.default.firstBoundary
+        secondBoundary = RankingWeights.default.secondBoundary
     }
 }

@@ -40,7 +40,9 @@ struct DashboardView: View {
 
                         rankingCards
 
-                        TrendChartView(appModel: appModel)
+                        if appModel.settings.showsTrendChart {
+                            TrendChartView(appModel: appModel)
+                        }
                     }
                     .padding(14)
                 }

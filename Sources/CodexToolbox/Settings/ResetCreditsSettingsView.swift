@@ -20,12 +20,14 @@ struct ResetCreditsSettingsView: View {
                         Text(warning.displayName).tag(warning)
                     }
                 }
-                Toggle("显示重置卡说明文字", isOn: descriptionsBinding)
+                Text("每张重置卡仅显示发放时间和过期时间，并统一换算为北京时间。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section("只读边界") {
                 Label("仅请求 account/rateLimits/read", systemImage: "lock.shield")
-                Text("Codex Toolbox 不会兑换、删除或自动使用重置卡，也不会保存服务返回的 opaque credit ID。")
+                Text("Codex Toolbox 不会兑换、删除或自动使用重置卡；不保存或输出 access token、refresh token、cookie、文字说明或完整唯一 ID。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -51,10 +53,4 @@ struct ResetCreditsSettingsView: View {
         )
     }
 
-    private var descriptionsBinding: Binding<Bool> {
-        Binding(
-            get: { appModel.settings.showsResetCreditDescriptions },
-            set: { appModel.settings.showsResetCreditDescriptions = $0 }
-        )
-    }
 }

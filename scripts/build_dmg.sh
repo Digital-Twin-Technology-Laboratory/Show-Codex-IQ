@@ -5,30 +5,34 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 XCODE_APP="${XCODE_APP:-/Applications/Xcode-beta.app}"
 source "$ROOT_DIR/scripts/version.sh"
-VERSION="$RELEASE_VERSION"
-BUILD_DIR="${TMPDIR%/}/ShowCodexIQ-xcode-dmg"
-ARCHIVE_PATH="$BUILD_DIR/ShowCodexIQ.xcarchive"
-DIST_DIR="$ROOT_DIR/dist"
-DMG_NAME="Show-Codex-IQ-$VERSION-universal.dmg"
+
+BUILD_DIR="$(mktemp -d "${TMPDIR%/}/CodexToolbox-dmg-archive.XXXXXX")"
+ARCHIVE_PATH="$BUILD_DIR/CodexToolbox.xcarchive"
+APP_PATH="$ARCHIVE_PATH/Products/Applications/Codex Toolbox.app"
+EXECUTABLE="$APP_PATH/Contents/MacOS/Codex Toolbox"
+OUTPUT_DMG="$ROOT_DIR/dist/Codex-Toolbox-$RELEASE_VERSION-universal.dmg"
+
+cleanup() {
+    rm -rf "$BUILD_DIR"
+}
+trap cleanup EXIT
 
 if [[ ! -x "$XCODE_APP/Contents/Developer/usr/bin/xcodebuild" ]]; then
     echo "Xcode not found at: $XCODE_APP" >&2
-    echo "Install Xcode 27 beta there, or set XCODE_APP=/path/to/Xcode.app." >&2
     exit 1
 fi
 
 export DEVELOPER_DIR="$XCODE_APP/Contents/Developer"
+export TOOLCHAINS="${TOOLCHAINS:-com.apple.dt.toolchain.XcodeDefault}"
 
-rm -rf "$BUILD_DIR"
-mkdir -p "$BUILD_DIR" "$DIST_DIR"
-
+mkdir -p "$ROOT_DIR/dist"
 if command -v xcodegen >/dev/null 2>&1; then
     (cd "$ROOT_DIR" && xcodegen generate)
 fi
 
 xcodebuild archive \
-    -project "$ROOT_DIR/ShowCodexIQ.xcodeproj" \
-    -scheme ShowCodexIQ \
+    -project "$ROOT_DIR/CodexToolbox.xcodeproj" \
+    -scheme CodexToolbox \
     -configuration Release \
     -destination "generic/platform=macOS" \
     -archivePath "$ARCHIVE_PATH" \
@@ -37,27 +41,37 @@ xcodebuild archive \
     CODE_SIGNING_ALLOWED=NO \
     SKIP_INSTALL=NO
 
-APP_PATH="$ARCHIVE_PATH/Products/Applications/Show Codex IQ.app"
-EXECUTABLE="$APP_PATH/Contents/MacOS/Show Codex IQ"
-
-if [[ ! -d "$APP_PATH" ]]; then
-    echo "Archive did not contain Show Codex IQ.app" >&2
-    exit 1
-fi
-
-ARCHS="$(lipo -archs "$EXECUTABLE")"
-if [[ "$ARCHS" != *arm64* || "$ARCHS" != *x86_64* ]]; then
-    echo "Expected Universal 2 executable, found: $ARCHS" >&2
+test -d "$APP_PATH"
+ARCHITECTURES="$(lipo -archs "$EXECUTABLE")"
+if [[ "$ARCHITECTURES" != *arm64* || "$ARCHITECTURES" != *x86_64* ]]; then
+    echo "Expected Universal 2 executable, found: $ARCHITECTURES" >&2
     exit 1
 fi
 
 xattr -cr "$APP_PATH"
-codesign --force --deep --options runtime --sign - --timestamp=none "$APP_PATH"
+if [[ -n "${APP_SIGN_IDENTITY:-}" ]]; then
+    codesign --force --options runtime --timestamp --sign "$APP_SIGN_IDENTITY" "$APP_PATH"
+else
+    codesign --force --options runtime --sign - --timestamp=none "$APP_PATH"
+    echo "Applied an ad-hoc development signature; Developer ID Application signing is still required." >&2
+fi
 codesign --verify --deep --strict --verbose=2 "$APP_PATH"
 
 "$ROOT_DIR/scripts/package_dmg.sh" \
     "$APP_PATH" \
-    "$DIST_DIR/$DMG_NAME" \
-    "Show Codex IQ $VERSION"
+    "$OUTPUT_DMG" \
+    "Codex Toolbox $RELEASE_VERSION"
 
-echo "Architectures: $ARCHS"
+if [[ -n "${APP_SIGN_IDENTITY:-}" ]]; then
+    codesign --force --timestamp --sign "$APP_SIGN_IDENTITY" "$OUTPUT_DMG"
+else
+    codesign --force --sign - --timestamp=none "$OUTPUT_DMG"
+fi
+
+(
+    cd "$(dirname "$OUTPUT_DMG")"
+    shasum -a 256 "$(basename "$OUTPUT_DMG")" > "$(basename "$OUTPUT_DMG").sha256"
+)
+
+"$ROOT_DIR/scripts/verify_dmg.sh" "$OUTPUT_DMG"
+echo "Architectures: $ARCHITECTURES"

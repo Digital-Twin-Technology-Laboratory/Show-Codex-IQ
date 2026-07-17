@@ -21,14 +21,9 @@ struct SettingsView: View {
 
     private var rootSettings: some View {
         TabView {
-            DashboardSettingsView(appModel: appModel)
+            GeneralDashboardSettingsView(appModel: appModel)
                 .tabItem {
-                    Label("看板", systemImage: "rectangle.3.group")
-                }
-
-            TokenUsageSettingsView(appModel: appModel)
-                .tabItem {
-                    Label("Token", systemImage: "chart.bar.xaxis")
+                    Label("通用&看板", systemImage: "slider.horizontal.3")
                 }
 
             ModelRadarSettingsView(
@@ -36,17 +31,17 @@ struct SettingsView: View {
                 onOpenMenuBarAliases: { page = .menuBarAliases }
             )
             .tabItem {
-                Label("模型智商", systemImage: "brain.head.profile")
+                Label("智商显示", systemImage: "brain.head.profile")
+            }
+
+            TokenUsageSettingsView(appModel: appModel)
+                .tabItem {
+                    Label("Token 用量", systemImage: "chart.bar.xaxis")
             }
 
             ResetCreditsSettingsView(appModel: appModel)
                 .tabItem {
                     Label("重置卡", systemImage: "arrow.clockwise.circle")
-                }
-
-            GeneralSystemSettingsView(appModel: appModel)
-                .tabItem {
-                    Label("通用", systemImage: "gearshape")
                 }
 
             AboutView()

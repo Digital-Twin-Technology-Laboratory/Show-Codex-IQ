@@ -6,7 +6,9 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 source "$ROOT_DIR/scripts/version.sh"
 
 PKG_PATH="$ROOT_DIR/dist/Codex-Toolbox-$RELEASE_VERSION-universal.pkg"
-CHECKSUM_PATH="$PKG_PATH.sha256"
+PKG_CHECKSUM_PATH="$PKG_PATH.sha256"
+DMG_PATH="$ROOT_DIR/dist/Codex-Toolbox-$RELEASE_VERSION-universal.dmg"
+DMG_CHECKSUM_PATH="$DMG_PATH.sha256"
 
 : "${ALLOW_GITHUB_RELEASE:?Set ALLOW_GITHUB_RELEASE=YES only after signing and notarization are complete}"
 if [[ "$ALLOW_GITHUB_RELEASE" != "YES" ]]; then
@@ -15,8 +17,11 @@ if [[ "$ALLOW_GITHUB_RELEASE" != "YES" ]]; then
 fi
 
 REQUIRE_DISTRIBUTION_SIGNATURE=1 "$ROOT_DIR/scripts/verify_pkg.sh" "$PKG_PATH"
+REQUIRE_DISTRIBUTION_SIGNATURE=1 "$ROOT_DIR/scripts/verify_dmg.sh" "$DMG_PATH"
 xcrun stapler validate "$PKG_PATH"
+xcrun stapler validate "$DMG_PATH"
 spctl --assess --type install --verbose=4 "$PKG_PATH"
+spctl --assess --type open --context context:primary-signature --verbose=4 "$DMG_PATH"
 
 if [[ -n "$(git -C "$ROOT_DIR" status --porcelain)" ]]; then
     echo "The repository must be clean before creating the release tag." >&2
@@ -40,7 +45,9 @@ git -C "$ROOT_DIR" tag -a "v$RELEASE_VERSION" -m "Codex Toolbox v$RELEASE_VERSIO
 git -C "$ROOT_DIR" push origin "v$RELEASE_VERSION"
 gh release create "v$RELEASE_VERSION" \
     "$PKG_PATH" \
-    "$CHECKSUM_PATH" \
+    "$PKG_CHECKSUM_PATH" \
+    "$DMG_PATH" \
+    "$DMG_CHECKSUM_PATH" \
     --repo Digital-Twin-Technology-Laboratory/Codex-Toolbox \
     --title "Codex Toolbox v$RELEASE_VERSION" \
     --notes-file "$ROOT_DIR/docs/releases/v$RELEASE_VERSION.md" \

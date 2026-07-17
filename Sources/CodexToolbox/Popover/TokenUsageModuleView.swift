@@ -79,8 +79,8 @@ struct TokenUsageModuleView: View {
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 34, alignment: .leading)
             } else {
-                ForEach(Array(tasks.enumerated()), id: \.element.id) { index, task in
-                    let displayedTitle = taskTitle(task, index: index)
+                ForEach(tasks) { task in
+                    let displayedTitle = task.title
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(spacing: 8) {
                             Text(displayedTitle)
@@ -172,10 +172,6 @@ struct TokenUsageModuleView: View {
                 tokens: appModel.usageHistory?.summary(for: key)?.totalTokens ?? 0
             )
         }
-    }
-
-    private func taskTitle(_ task: DailyTaskUsage, index: Int) -> String {
-        appModel.settings.anonymizesTaskTitles ? "任务 \(index + 1)" : task.title
     }
 
     private func dayKey(_ date: Date) -> String {

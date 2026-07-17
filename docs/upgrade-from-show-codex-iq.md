@@ -2,7 +2,7 @@
 
 Codex Toolbox 更改了产品名和应用文件名，但保留 Bundle ID `io.github.zzzzzzjw.ShowCodexIQ` 与原 UserDefaults 键。这使得已有设置与登录项状态可继续使用。
 
-## PKG 的无感迁移
+## PKG 的无感迁移（推荐）
 
 1. `preinstall` 只检查 `/Applications/Show Codex IQ.app` 与 `/Applications/Codex Toolbox.app`，验证 Bundle ID 后请求运行中的应用退出。
 2. 15 秒内未退出则安全中止安装，不强制终止进程。
@@ -11,6 +11,16 @@ Codex Toolbox 更改了产品名和应用文件名，但保留 Bundle ID `io.git
 5. 只有全部验证成功后，才会在旧路径不是符号链接且 Bundle ID 匹配时删除该精确路径。
 
 安装脚本不扫描、不修改任何用户主目录，也不删除其他同名文件。
+
+## DMG 的手动升级
+
+DMG 作为 Release 中的可选拖拽安装包，但无法代替不同文件名的旧应用。从 Show Codex IQ 升级时必须：
+
+1. 先退出 Show Codex IQ。
+2. 在 `/Applications` 中把 `Show Codex IQ.app` 移到废纸篓。
+3. 再把 DMG 中的 `Codex Toolbox.app` 拖入 Applications。
+
+DMG 背景和内附的《DMG 安装与升级说明》都会明确提醒此步骤。如保留新旧两个同 Bundle ID 应用，macOS LaunchServices 与登录启动项可能指向不明确。
 
 ## 设置、缓存与登录启动
 

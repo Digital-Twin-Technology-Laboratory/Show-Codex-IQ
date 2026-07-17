@@ -3,7 +3,7 @@
 set -euo pipefail
 
 if [[ $# -ne 3 ]]; then
-    echo "Usage: $0 /path/to/App.app /path/to/output.dmg 'Volume Name'" >&2
+    echo "Usage: $0 /path/to/Codex\ Toolbox.app /path/to/output.dmg 'Volume Name'" >&2
     exit 2
 fi
 
@@ -11,12 +11,12 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 APP_PATH="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
 OUTPUT_DMG="$(cd "$(dirname "$2")" && pwd)/$(basename "$2")"
 VOL_NAME="$3"
-BACKGROUND_SOURCE="$ROOT_DIR/design/dmg/ShowCodexIQ-dmg-background.png"
-GUIDE_SOURCE="$ROOT_DIR/docs/distribution/首次打开说明.txt"
-BUILD_DIR="${TMPDIR%/}/ShowCodexIQ-package-dmg-$$"
+BACKGROUND_SOURCE="$ROOT_DIR/design/dmg/CodexToolbox-dmg-background.png"
+GUIDE_SOURCE="$ROOT_DIR/docs/distribution/DMG安装与升级说明.txt"
+BUILD_DIR="$(mktemp -d "${TMPDIR%/}/CodexToolbox-package-dmg.XXXXXX")"
 STAGE_DIR="$BUILD_DIR/dmg-root"
-RW_DMG="$BUILD_DIR/ShowCodexIQ-installer-rw.dmg"
-BUILD_VOL_NAME="Show Codex IQ Build $$"
+RW_DMG="$BUILD_DIR/CodexToolbox-installer-rw.dmg"
+BUILD_VOL_NAME="Codex Toolbox Build $$"
 DEVICE=""
 
 cleanup() {
@@ -27,33 +27,20 @@ cleanup() {
 }
 trap cleanup EXIT
 
-if [[ ! -d "$APP_PATH" ]]; then
-    echo "Missing app bundle: $APP_PATH" >&2
-    exit 1
-fi
+test -d "$APP_PATH"
+test -f "$BACKGROUND_SOURCE"
+test -f "$GUIDE_SOURCE"
 
-if [[ ! -f "$BACKGROUND_SOURCE" ]]; then
-    echo "Missing DMG background: $BACKGROUND_SOURCE" >&2
-    exit 1
-fi
-
-if [[ ! -f "$GUIDE_SOURCE" ]]; then
-    echo "Missing first-launch guide: $GUIDE_SOURCE" >&2
-    exit 1
-fi
-
-rm -rf "$BUILD_DIR"
 mkdir -p "$STAGE_DIR/.background" "$(dirname "$OUTPUT_DMG")"
-
-ditto --noextattr --noqtn --noacl "$APP_PATH" "$STAGE_DIR/Show Codex IQ.app"
+ditto --noextattr --noqtn --noacl "$APP_PATH" "$STAGE_DIR/Codex Toolbox.app"
 ln -s /Applications "$STAGE_DIR/Applications"
-ditto --noextattr --noqtn --noacl "$GUIDE_SOURCE" "$STAGE_DIR/首次打开说明.txt"
+ditto --noextattr --noqtn --noacl "$GUIDE_SOURCE" "$STAGE_DIR/DMG安装与升级说明.txt"
 ditto --noextattr --noqtn --noacl \
     "$BACKGROUND_SOURCE" \
-    "$STAGE_DIR/.background/ShowCodexIQ-dmg-background.png"
-codesign --verify --deep --strict --verbose=2 "$STAGE_DIR/Show Codex IQ.app"
+    "$STAGE_DIR/.background/CodexToolbox-dmg-background.png"
+codesign --verify --deep --strict --verbose=2 "$STAGE_DIR/Codex Toolbox.app"
 
-rm -f "$OUTPUT_DMG" "$OUTPUT_DMG.sha256" "$RW_DMG"
+rm -f "$OUTPUT_DMG" "$OUTPUT_DMG.sha256"
 diskutil image create blank \
     --format RAW \
     --size 200m \
@@ -89,9 +76,9 @@ tell application "Finder"
         set arrangement of viewOptions to not arranged
         set icon size of viewOptions to 104
         set text size of viewOptions to 13
-        set background picture of viewOptions to file ".background:ShowCodexIQ-dmg-background.png"
+        set background picture of viewOptions to file ".background:CodexToolbox-dmg-background.png"
 
-        set position of item "Show Codex IQ.app" of container window to {165, 218}
+        set position of item "Codex Toolbox.app" of container window to {165, 218}
         set position of item "Applications" of container window to {495, 218}
 
         set selection of application "Finder" to {}
@@ -102,11 +89,7 @@ tell application "Finder"
 end tell
 APPLESCRIPT
 
-if [[ ! -f "$MOUNT_DIR/.DS_Store" ]]; then
-    echo "Finder did not persist the DMG window layout" >&2
-    exit 1
-fi
-
+test -f "$MOUNT_DIR/.DS_Store"
 sync
 diskutil rename "$MOUNT_DIR" "$VOL_NAME" >/dev/null
 diskutil eject "$DEVICE"
@@ -117,10 +100,4 @@ diskutil image create from \
     "$RW_DMG" \
     "$OUTPUT_DMG"
 
-(
-    cd "$(dirname "$OUTPUT_DMG")"
-    shasum -a 256 "$(basename "$OUTPUT_DMG")" > "$(basename "$OUTPUT_DMG").sha256"
-)
-
 echo "Created: $OUTPUT_DMG"
-cat "$OUTPUT_DMG.sha256"

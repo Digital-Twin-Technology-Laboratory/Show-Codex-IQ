@@ -23,7 +23,7 @@ struct ResetCreditsModuleView: View {
                             Text("最近过期")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
-                            Text(expiration.formatted(date: .abbreviated, time: .shortened))
+                            Text(beijingDate(expiration))
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(expirationColor(expiration))
                         }
@@ -32,7 +32,7 @@ struct ResetCreditsModuleView: View {
 
                 creditDetails(snapshot)
 
-                Text("更新于 \(snapshot.fetchedAt.formatted(date: .omitted, time: .shortened))")
+                Text("更新于 \(beijingDate(snapshot.fetchedAt))（北京时间）")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
                     .frame(maxWidth: .infinity, alignment: .trailing)
@@ -75,27 +75,20 @@ struct ResetCreditsModuleView: View {
                 .frame(maxWidth: .infinity, minHeight: 34, alignment: .leading)
         } else {
             VStack(spacing: 0) {
-                ForEach(snapshot.credits) { credit in
+                ForEach(Array(snapshot.credits.enumerated()), id: \.element.id) { index, credit in
                     HStack(alignment: .top, spacing: 9) {
-                        Image(systemName: credit.isAvailable ? "checkmark.circle.fill" : "clock.badge.xmark")
-                            .foregroundStyle(credit.isAvailable ? .teal : .secondary)
+                        Image(systemName: "clock")
+                            .foregroundStyle(.teal)
                             .frame(width: 16)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(credit.title ?? credit.resetType ?? "重置卡")
+                            Text("重置卡 \(index + 1)")
                                 .font(.caption.weight(.semibold))
-                            if let expiration = credit.expiresAt {
-                                Text("过期：\(expiration.formatted(date: .abbreviated, time: .shortened))")
-                                    .font(.caption2)
-                                    .foregroundStyle(expirationColor(expiration))
-                            }
-                            if appModel.settings.showsResetCreditDescriptions,
-                               let description = credit.description,
-                               !description.isEmpty {
-                                Text(description)
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
+                            Text("发放：\(credit.grantedAt.map(beijingDate) ?? "服务未提供")")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            Text("过期：\(credit.expiresAt.map(beijingDate) ?? "服务未提供")")
+                                .font(.caption2)
+                                .foregroundStyle(credit.expiresAt.map(expirationColor) ?? .secondary)
                         }
                         Spacer()
                     }
@@ -103,6 +96,10 @@ struct ResetCreditsModuleView: View {
                     if credit.id != snapshot.credits.last?.id { Divider() }
                 }
             }
+
+            Text("上述时间均为北京时间（UTC+8）")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
 
             let missingDetails = max(0, snapshot.availableCount - snapshot.availableCredits.count)
             if missingDetails > 0 {
@@ -120,5 +117,14 @@ struct ResetCreditsModuleView: View {
             return .secondary
         }
         return .orange
+    }
+
+    private func beijingDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = TimeZone(identifier: "Asia/Shanghai")
+        formatter.dateFormat = "yyyy年M月d日 HH:mm"
+        return formatter.string(from: date)
     }
 }

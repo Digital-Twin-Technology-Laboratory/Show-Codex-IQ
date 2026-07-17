@@ -15,6 +15,8 @@ v1.0.0 附件固定为：
 ```text
 Codex-Toolbox-1.0.0-universal.pkg
 Codex-Toolbox-1.0.0-universal.pkg.sha256
+Codex-Toolbox-1.0.0-universal.dmg
+Codex-Toolbox-1.0.0-universal.dmg.sha256
 ```
 
 ## 发布门禁
@@ -25,9 +27,11 @@ Codex-Toolbox-1.0.0-universal.pkg.sha256
 - Release 应用是 arm64 + x86_64 Universal 2，CodexToolboxCore 保持静态链接。
 - 应用使用 Developer ID Application 签名并开启 Hardened Runtime。
 - PKG 使用 Developer ID Installer 签名。
-- Apple 公证成功，ticket 已 staple，`spctl --type install` 通过。
+- DMG 内应用与 DMG 使用 Developer ID Application 签名。
+- PKG 和 DMG 的 Apple 公证均成功，ticket 已 staple，对应 Gatekeeper 检查通过。
 - PKG 实际验证了 Bundle ID、版本、双架构、签名、安装脚本与 SHA-256。
 - 从最后一个 Show Codex IQ beta 升级后，只留下一个 Codex Toolbox，设置、榜单缓存与登录启动正常继承。
+- DMG 背景、内附说明和 Release Notes 均明确要求升级用户先删除 `Show Codex IQ.app`。
 - README、CHANGELOG、真实截图和 `docs/releases/v1.0.0.md` 与产物一致。
 - GitHub 仓库名为 `Digital-Twin-Technology-Laboratory/Codex-Toolbox`，本地 `origin` 指向新 URL。
 
@@ -51,7 +55,7 @@ xcodebuild -project CodexToolbox.xcodeproj -scheme CodexToolbox \
   -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test
 ```
 
-没有证书时可运行 `bash scripts/build_pkg.sh` 生成本地测试 PKG。它使用 ad-hoc 应用签名和未签名安装器，仅用于验证打包结构，不能作为 Release 附件。
+没有证书时可运行 `bash scripts/build_pkg.sh` 和 `bash scripts/build_dmg.sh` 生成本地测试产物。它们使用 ad-hoc 应用签名，PKG 安装器也未签名，仅用于验证打包结构，不能作为 Release 附件。
 
 ## Developer ID 签名、公证与 staple
 
@@ -62,14 +66,20 @@ APP_SIGN_IDENTITY='Developer ID Application: Team Name (TEAMID)' \
 INSTALLER_SIGN_IDENTITY='Developer ID Installer: Team Name (TEAMID)' \
 bash scripts/build_pkg.sh
 
+APP_SIGN_IDENTITY='Developer ID Application: Team Name (TEAMID)' \
+bash scripts/build_dmg.sh
+
 REQUIRE_DISTRIBUTION_SIGNATURE=1 \
 bash scripts/verify_pkg.sh dist/Codex-Toolbox-1.0.0-universal.pkg
 
 NOTARY_PROFILE='codex-toolbox-notary' \
 bash scripts/notarize_pkg.sh dist/Codex-Toolbox-1.0.0-universal.pkg
+
+NOTARY_PROFILE='codex-toolbox-notary' \
+bash scripts/notarize_dmg.sh dist/Codex-Toolbox-1.0.0-universal.dmg
 ```
 
-`notarize_pkg.sh` 会等待公证结果、staple ticket、验证 ticket、运行 `spctl --assess --type install`，然后重新生成 SHA-256。任一步失败即终止。
+`notarize_pkg.sh` 和 `notarize_dmg.sh` 会分别等待公证结果、staple ticket、验证 ticket、运行对应 `spctl` 检查，然后重新生成 SHA-256。任一步失败即终止。
 
 ## 提交、标签与普通 Release
 
@@ -80,6 +90,6 @@ bash scripts/notarize_pkg.sh dist/Codex-Toolbox-1.0.0-universal.pkg
    ALLOW_GITHUB_RELEASE=YES bash scripts/release_github.sh
    ```
 
-3. 脚本会重新执行签名、staple 和 Gatekeeper 门禁，确认本地 `main` 与 `origin/main` 没有分叉，推送 `main`，创建签名注释标签 `v1.0.0`，并创建不带 `--prerelease` 的普通 GitHub Release。
+3. 脚本会重新执行 PKG 与 DMG 的签名、staple 和 Gatekeeper 门禁，确认本地 `main` 与 `origin/main` 没有分叉，推送 `main`，创建签名注释标签 `v1.0.0`，并上传两种格式及各自校验和，创建不带 `--prerelease` 的普通 GitHub Release。
 
 已发布的标签与附件不得覆盖；任何修复使用新版本号。

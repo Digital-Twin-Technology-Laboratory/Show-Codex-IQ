@@ -4,6 +4,7 @@ import SwiftUI
 struct DashboardModuleHeader: View {
     let module: ToolboxModule
     let subtitle: String
+    let collapsedSummary: String?
     let isCollapsed: Bool
     let isRefreshing: Bool
     let refresh: () -> Void
@@ -17,8 +18,17 @@ struct DashboardModuleHeader: View {
                 .frame(width: 22, height: 22)
 
             VStack(alignment: .leading, spacing: 1) {
-                Text(module.displayName)
-                    .font(.system(size: 13, weight: .bold))
+                HStack(spacing: 6) {
+                    Text(module.displayName)
+                        .font(.system(size: 13, weight: .bold))
+                    if isCollapsed, let collapsedSummary {
+                        Text(collapsedSummary)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(tint)
+                            .monospacedDigit()
+                            .lineLimit(1)
+                    }
+                }
                 Text(subtitle)
                     .font(.caption2)
                     .foregroundStyle(.secondary)

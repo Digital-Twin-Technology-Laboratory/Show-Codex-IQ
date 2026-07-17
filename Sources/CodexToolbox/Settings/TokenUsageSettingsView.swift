@@ -20,9 +20,9 @@ struct TokenUsageSettingsView: View {
                 }
             }
 
-            Section("隐私") {
-                Toggle("隐藏任务标题", isOn: anonymizesTitlesBinding)
-                Text("开启后，看板只显示“任务 1、任务 2…”。标题仍只保存在本机账本中。")
+            Section("任务名称") {
+                Label("看板使用 Codex 在本机记录的具体对话或任务名称", systemImage: "text.quote")
+                Text("标题只从本机 SQLite 与账本读取，不会上传。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -65,10 +65,4 @@ struct TokenUsageSettingsView: View {
         )
     }
 
-    private var anonymizesTitlesBinding: Binding<Bool> {
-        Binding(
-            get: { appModel.settings.anonymizesTaskTitles },
-            set: { appModel.settings.anonymizesTaskTitles = $0 }
-        )
-    }
 }

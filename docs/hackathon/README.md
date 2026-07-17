@@ -1,6 +1,6 @@
 # OpenAI Build Week submission kit
 
-> Historical archive: these materials document the project when it was named **Show Codex IQ** and distributed as a beta DMG. The current product is **Codex Toolbox** and uses a signed, notarized PKG release flow.
+> Historical archive: these materials document the project when it was named **Show Codex IQ** and distributed as a beta DMG. The current product is **Codex Toolbox** and releases signed, notarized PKG and DMG installers.
 
 This directory contains the copy, evidence, and recording plan for the **Show Codex IQ** submission to OpenAI Build Week.
 

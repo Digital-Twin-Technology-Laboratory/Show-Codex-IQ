@@ -4,7 +4,7 @@
 2. 修改 `project.yml` 后运行 `xcodegen generate`，并一起提交生成的 Xcode 工程。
 3. 在提交前运行 `swift run CoreVerification` 和完整 Xcode 单元测试。
 4. 数据模型必须容错；新字段不得让旧快照无法读取。
-5. Token 数据源必须保持只读；重置卡客户端只允许 `account/rateLimits/read`，不得引入 consume 请求或 opaque ID 持久化。
+5. Token 数据源必须保持只读；重置卡客户端只允许 `account/rateLimits/read`，不得引入 consume 请求，不得持久化或输出 access token、refresh token、cookie、说明文字或完整唯一 ID。
 6. 不要加入分析 SDK、账号凭据或 HTML 抓取。
 7. 不要将 PKG、DMG、Developer ID 证书、公证凭据或用户数据提交到仓库。
 8. 用户可见变更应加入 `CHANGELOG.md` 的 Unreleased 区段；发布版本只在 `Sources/CodexToolbox/Config/Version.xcconfig` 中维护。

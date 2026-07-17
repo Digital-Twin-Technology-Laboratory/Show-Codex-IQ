@@ -6,7 +6,7 @@
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-07-18
+## [1.0.0] - 2026-07-20
 
 ### Added
 
@@ -16,14 +16,19 @@
 - 新增可隐藏、折叠、拖动排序和键盘排序的三模块看板，并为 Token、模型智商、重置卡提供独立设置。
 - 新增 Show Codex IQ 快照缓存迁移和登录启动项一次性重注册。
 - 新增具有精确旧应用迁移、Universal 2 检查、Developer ID 双签名、公证和 Gatekeeper 发布门禁的 PKG 工作流。
+- 恢复 Codex Toolbox DMG 构建、签名、公证、Finder 布局和真实启动验证，与 PKG 一同作为正式 Release 附件。
+- 新增 GitHub 最新正式 Release 自动/手动更新检查。
 
 ### Changed
 
 - 产品、Swift 模块、Xcode 工程和仓库统一更名为 Codex Toolbox，同时保留 `io.github.zzzzzzjw.ShowCodexIQ` Bundle ID 和原 UserDefaults 键。
 - 模型排名成为 Codex Toolbox 的首个模块，原有榜单、别名、趋势、权重和菜单栏展示全部保留。
+- Token 与重置卡默认折叠，折叠标题仍显示核心数字；设置页重组为“通用&看板”、“智商显示”、“Token 用量”、“重置卡”、“关于”。
+- Token Top 3 使用 SQLite 中的具体任务标题，通用标题自动回退到本机首条用户消息/预览摘要。
+- 重置卡逐卡只展示发放与过期的北京时间，不再缓存标题或说明文字。
 - 交互控件改为真正的可键盘操作 `Button`，统一为无弹跳临界阻尼动效、140ms 按压反馈与 Reduced Motion 交叉淡化。
 - 应用图标在原有 Codex/终端/雷达基底中加入低对比交叉扳手与锯子图层，同步提供 Icon Composer 分层源和扁平回退图标。
-- 正式发布附件从 DMG 改为已签名、公证并 staple 的 `Codex-Toolbox-1.0.0-universal.pkg`。
+- 正式发布同时提供已签名、公证并 staple 的 Universal 2 PKG 和 DMG；PKG 负责无感迁移，DMG 明确引导用户先删除旧应用。
 
 ### Fixed
 

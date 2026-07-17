@@ -14,9 +14,25 @@ struct CodexToolboxApp: App {
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    let appModel = AppModel()
+    let appModel: AppModel
 
     private var statusItemController: StatusItemController?
+
+    override init() {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--demo-dashboard") {
+            appModel = AppModel(
+                usageReader: DemoUsageReader(),
+                resetCreditsReader: DemoResetCreditsReader()
+            )
+        } else {
+            appModel = AppModel()
+        }
+        #else
+        appModel = AppModel()
+        #endif
+        super.init()
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApplication.shared.setActivationPolicy(.accessory)

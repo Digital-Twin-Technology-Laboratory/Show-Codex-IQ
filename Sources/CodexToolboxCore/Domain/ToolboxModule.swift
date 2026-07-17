@@ -32,7 +32,7 @@ public struct DashboardConfiguration: Codable, Hashable, Sendable {
     public static let `default` = DashboardConfiguration(
         orderedModules: ToolboxModule.allCases,
         hiddenModules: [],
-        collapsedModules: []
+        collapsedModules: [.tokenUsage, .resetCredits]
     )
 
     public init(

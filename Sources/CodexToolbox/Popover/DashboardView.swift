@@ -136,6 +136,7 @@ struct DashboardView: View {
             DashboardModuleHeader(
                 module: module,
                 subtitle: moduleSubtitle(module),
+                collapsedSummary: moduleSummary(module),
                 isCollapsed: collapsed,
                 isRefreshing: isRefreshing(module),
                 refresh: { refresh(module) },
@@ -271,6 +272,34 @@ struct DashboardView: View {
         }
     }
 
+    private func moduleSummary(_ module: ToolboxModule) -> String? {
+        switch module {
+        case .modelRadar:
+            return nil
+        case .tokenUsage:
+            if appModel.isUsageInitialLoading { return "正在读取…" }
+            guard let summary = appModel.usageHistory?.summary(for: dayKey(Date())) else {
+                return "今日 0"
+            }
+            let suffix = summary.isComplete ? "" : " · 不完整"
+            return "今日 \(summary.totalTokens.formatted(.number.grouping(.automatic)))\(suffix)"
+        case .resetCredits:
+            if appModel.isResetCreditsInitialLoading { return "正在读取…" }
+            guard let snapshot = appModel.resetCreditsSnapshot else { return "暂无数据" }
+            return "可用 \(snapshot.availableCount) 张"
+        }
+    }
+
+    private func dayKey(_ date: Date) -> String {
+        let components = Calendar.current.dateComponents([.year, .month, .day], from: date)
+        return String(
+            format: "%04d-%02d-%02d",
+            components.year ?? 0,
+            components.month ?? 0,
+            components.day ?? 0
+        )
+    }
+
     private func isRefreshing(_ module: ToolboxModule) -> Bool {
         switch module {
         case .modelRadar: appModel.isRefreshing
@@ -299,6 +328,15 @@ struct DashboardView: View {
             .foregroundStyle(.secondary)
 
             Spacer()
+
+            if case let .available(release) = appModel.updateCheckState {
+                Link(destination: release.pageURL) {
+                    Image(systemName: "arrow.down.circle.fill")
+                }
+                .foregroundStyle(.blue)
+                .help("发现 Codex Toolbox \(release.version)")
+                .accessibilityLabel("发现新版本 \(release.version)")
+            }
 
             SettingsLink {
                 Image(systemName: "gearshape")

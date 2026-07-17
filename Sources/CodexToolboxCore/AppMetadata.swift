@@ -8,6 +8,11 @@ public enum AppMetadata {
     public static let repositoryURL = URL(
         string: "https://github.com/Digital-Twin-Technology-Laboratory/Codex-Toolbox"
     )!
+    public static let releasesURL = repositoryURL.appendingPathComponent("releases")
+    public static let latestReleasePageURL = releasesURL.appendingPathComponent("latest")
+    public static let latestReleaseAPIURL = URL(
+        string: "https://api.github.com/repos/Digital-Twin-Technology-Laboratory/Codex-Toolbox/releases/latest"
+    )!
 
     public static var version: String {
         version(in: Bundle.main.infoDictionary)

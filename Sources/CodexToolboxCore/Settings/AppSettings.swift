@@ -131,10 +131,6 @@ public final class AppSettings {
         didSet { defaults.set(resetExpiryWarning.rawValue, forKey: Keys.resetExpiryWarning) }
     }
 
-    public var showsResetCreditDescriptions: Bool {
-        didSet { defaults.set(showsResetCreditDescriptions, forKey: Keys.showsResetCreditDescriptions) }
-    }
-
     public var menuBarMetric: RankingMetric {
         didSet { defaults.set(menuBarMetric.rawValue, forKey: Keys.menuBarMetric) }
     }
@@ -179,6 +175,10 @@ public final class AppSettings {
         didSet { defaults.set(launchAtLoginEnabled, forKey: Keys.launchAtLoginEnabled) }
     }
 
+    public var automaticUpdateChecksEnabled: Bool {
+        didSet { defaults.set(automaticUpdateChecksEnabled, forKey: Keys.automaticUpdateChecksEnabled) }
+    }
+
     @ObservationIgnored
     private let defaults: UserDefaults
 
@@ -191,7 +191,8 @@ public final class AppSettings {
             defaults.stringArray(forKey: Keys.hiddenDashboardModules) ?? []
         )
         collapsedDashboardModules = Self.moduleSet(
-            defaults.stringArray(forKey: Keys.collapsedDashboardModules) ?? []
+            defaults.stringArray(forKey: Keys.collapsedDashboardModules)
+                ?? DashboardConfiguration.default.collapsedModules.map(\.rawValue)
         )
         usageRefreshInterval = UsageRefreshInterval(
             rawValue: defaults.integer(forKey: Keys.usageRefreshInterval)
@@ -209,11 +210,6 @@ public final class AppSettings {
             resetExpiryWarning = ResetExpiryWarning(
                 rawValue: defaults.integer(forKey: Keys.resetExpiryWarning)
             ) ?? .threeDays
-        }
-        if defaults.object(forKey: Keys.showsResetCreditDescriptions) == nil {
-            showsResetCreditDescriptions = true
-        } else {
-            showsResetCreditDescriptions = defaults.bool(forKey: Keys.showsResetCreditDescriptions)
         }
         menuBarMetric = RankingMetric(rawValue: defaults.string(forKey: Keys.menuBarMetric) ?? "") ?? .iq
         menuBarRankStyle = MenuBarRankStyle(
@@ -260,6 +256,11 @@ public final class AppSettings {
         )
         rankingWeights = storedWeights.isValid ? storedWeights : .default
         launchAtLoginEnabled = defaults.bool(forKey: Keys.launchAtLoginEnabled)
+        if defaults.object(forKey: Keys.automaticUpdateChecksEnabled) == nil {
+            automaticUpdateChecksEnabled = true
+        } else {
+            automaticUpdateChecksEnabled = defaults.bool(forKey: Keys.automaticUpdateChecksEnabled)
+        }
     }
 
     @discardableResult
@@ -321,7 +322,7 @@ public final class AppSettings {
     public func resetDashboardConfiguration() {
         dashboardModuleOrder = ToolboxModule.allCases
         hiddenDashboardModules = []
-        collapsedDashboardModules = []
+        collapsedDashboardModules = DashboardConfiguration.default.collapsedModules
     }
 
     public func menuBarModelAlias(for modelID: String) -> String {
@@ -374,7 +375,6 @@ public final class AppSettings {
         static let anonymizesTaskTitles = "anonymizesTaskTitles"
         static let resetCreditsRefreshInterval = "resetCreditsRefreshIntervalMinutes"
         static let resetExpiryWarning = "resetExpiryWarningDays"
-        static let showsResetCreditDescriptions = "showsResetCreditDescriptions"
         static let menuBarMetric = "menuBarMetric"
         static let menuBarRankStyle = "menuBarRankStyle"
         static let showsMenuBarIcon = "showsMenuBarIcon"
@@ -388,5 +388,6 @@ public final class AppSettings {
         static let costWeight = "rankingWeightCost"
         static let durationWeight = "rankingWeightDuration"
         static let launchAtLoginEnabled = "launchAtLoginEnabled"
+        static let automaticUpdateChecksEnabled = "automaticUpdateChecksEnabled"
     }
 }

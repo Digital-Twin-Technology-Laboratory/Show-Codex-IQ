@@ -17,16 +17,16 @@ public enum ResetCreditsError: LocalizedError, Sendable, Equatable {
             "未找到 Codex。请安装并登录 Codex 或 ChatGPT 后重试。"
         case let .disallowedMethod(method):
             "出于安全原因不允许调用 app-server 方法：\(method)"
-        case let .launchFailed(message):
-            "无法启动 Codex app-server：\(message)"
+        case .launchFailed:
+            "无法启动 Codex app-server。请确认 Codex 可正常启动后重试。"
         case .timeout:
             "Codex app-server 响应超时，请确认 Codex 可正常启动后重试。"
-        case let .notLoggedIn(message):
-            "Codex 尚未登录：\(message)"
-        case let .protocolIncompatible(message):
-            "当前 Codex app-server 协议不兼容：\(message)"
-        case let .server(message):
-            "Codex app-server 返回错误：\(message)"
+        case .notLoggedIn:
+            "Codex 尚未登录或登录已失效。请重新登录后重试。"
+        case .protocolIncompatible:
+            "当前 Codex app-server 协议不兼容。请更新 Codex 后重试。"
+        case .server:
+            "Codex app-server 返回错误。为保护账户凭据，详细信息已隐藏。"
         }
     }
 }
@@ -279,14 +279,12 @@ public actor ResetCreditsClient: AccountRateLimitsReading {
         }
         let availableCount = (container["availableCount"] as? NSNumber)?.intValue ?? 0
         let rows = container["credits"] as? [[String: Any]] ?? []
-        let credits = rows.map { row in
+        let credits = rows.enumerated().map { index, row in
             ResetCreditSummary(
-                resetType: row["resetType"] as? String,
+                sequence: index + 1,
                 status: row["status"] as? String ?? "unknown",
                 grantedAt: Self.date(row["grantedAt"]),
-                expiresAt: Self.date(row["expiresAt"]),
-                title: row["title"] as? String,
-                description: row["description"] as? String
+                expiresAt: Self.date(row["expiresAt"])
             )
         }
         return ResetCreditsSnapshot(

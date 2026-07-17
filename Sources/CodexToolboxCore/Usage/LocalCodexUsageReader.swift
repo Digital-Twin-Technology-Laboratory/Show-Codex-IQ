@@ -25,6 +25,44 @@ private struct CodexThreadRow: Sendable {
     let createdAt: Int64
 }
 
+private enum TaskTitleResolver {
+    static func resolve(
+        title: String,
+        firstUserMessage: String,
+        preview: String,
+        workingDirectory: String
+    ) -> String {
+        let normalizedTitle = normalized(title)
+        let fallbacks = [firstUserMessage, preview].map(normalized).filter { !$0.isEmpty }
+
+        if !normalizedTitle.isEmpty, !isGeneric(normalizedTitle) {
+            return normalizedTitle
+        }
+        if let concreteFallback = fallbacks.first(where: { !isGeneric($0) }) {
+            return concreteFallback
+        }
+        if let fallback = fallbacks.first { return fallback }
+
+        let directoryName = URL(fileURLWithPath: workingDirectory).lastPathComponent
+        if !directoryName.isEmpty, directoryName != "/" {
+            return "\(directoryName) 中的任务"
+        }
+        return normalizedTitle.isEmpty ? "未命名任务" : normalizedTitle
+    }
+
+    private static func normalized(_ value: String) -> String {
+        let words = value.split(whereSeparator: \.isWhitespace)
+        return String(words.joined(separator: " ").prefix(120))
+    }
+
+    private static func isGeneric(_ value: String) -> Bool {
+        value.range(
+            of: #"^(?:任务|对话|task|conversation)\s*#?\s*\d+$"#,
+            options: [.regularExpression, .caseInsensitive]
+        ) != nil
+    }
+}
+
 private struct CodexThreadInventory: Sendable {
     let threads: [String: CodexThreadRow]
     let parentByChild: [String: String]
@@ -77,9 +115,15 @@ private final class ReadOnlySQLiteDatabase {
     }
 
     func inventory() throws -> CodexThreadInventory {
+        let columns = try tableColumns("threads")
+        let firstUserMessage = columns.contains("first_user_message")
+            ? "COALESCE(first_user_message, '')" : "''"
+        let preview = columns.contains("preview") ? "COALESCE(preview, '')" : "''"
+        let workingDirectory = columns.contains("cwd") ? "COALESCE(cwd, '')" : "''"
         let statement = try prepare(
             "SELECT id, COALESCE(title, ''), COALESCE(rollout_path, ''), " +
-            "COALESCE(created_at, 0) FROM threads"
+            "COALESCE(created_at, 0), \(firstUserMessage), \(preview), " +
+            "\(workingDirectory) FROM threads"
         )
         defer { sqlite3_finalize(statement) }
         var threads: [String: CodexThreadRow] = [:]
@@ -88,7 +132,12 @@ private final class ReadOnlySQLiteDatabase {
             guard !id.isEmpty else { continue }
             threads[id] = CodexThreadRow(
                 id: id,
-                title: text(statement, column: 1),
+                title: TaskTitleResolver.resolve(
+                    title: text(statement, column: 1),
+                    firstUserMessage: text(statement, column: 4),
+                    preview: text(statement, column: 5),
+                    workingDirectory: text(statement, column: 6)
+                ),
                 rolloutPath: text(statement, column: 2),
                 createdAt: sqlite3_column_int64(statement, 3)
             )
@@ -106,6 +155,16 @@ private final class ReadOnlySQLiteDatabase {
             }
         }
         return CodexThreadInventory(threads: threads, parentByChild: parents)
+    }
+
+    private func tableColumns(_ table: String) throws -> Set<String> {
+        let statement = try prepare("PRAGMA table_info(\(table))")
+        defer { sqlite3_finalize(statement) }
+        var columns: Set<String> = []
+        while sqlite3_step(statement) == SQLITE_ROW {
+            columns.insert(text(statement, column: 1))
+        }
+        return columns
     }
 
     private func prepare(_ sql: String) throws -> OpaquePointer {
@@ -334,6 +393,8 @@ public actor LocalCodexUsageReader: CodexUsageReading, UsageHistoryClearing {
                     checkpoint: nil,
                     isComplete: false
                 )
+                preserved.rootTaskID = rootID
+                preserved.title = thread.title
                 preserved.isComplete = false
                 ledger.threads[thread.id] = preserved
                 warnings.append("任务 \(thread.id) 的 rollout 读取失败：\(error.localizedDescription)")

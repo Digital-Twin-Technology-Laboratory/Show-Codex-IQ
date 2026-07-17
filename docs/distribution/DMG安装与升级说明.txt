@@ -1,0 +1,21 @@
+Codex Toolbox DMG 安装与升级说明
+
+全新安装
+1. 将“Codex Toolbox”拖入旁边的 Applications（应用程序）文件夹。
+2. 在“应用程序”中打开 Codex Toolbox。
+3. 应用启动后只出现在菜单栏。
+
+从 Show Codex IQ 升级
+1. 先在菜单栏退出 Show Codex IQ。
+2. 在“应用程序”中把“Show Codex IQ.app”移到废纸篓。
+3. 再将“Codex Toolbox.app”拖入 Applications。
+4. Bundle ID 保持不变，原有设置、榜单缓存与登录启动偏好会继续使用。
+
+为什么必须删除旧应用
+DMG 是拖拽安装，无法自动删除改名前的“Show Codex IQ.app”。如果保留两个应用，macOS 可能同时索引它们，并造成重复启动或启动项指向不明确。
+
+更省心的升级方式
+也可下载同一 Release 中的 PKG。PKG 在新应用验证成功后，会安全删除精确路径“/Applications/Show Codex IQ.app”。
+
+安全说明
+正式发布附件应使用 Developer ID 签名并通过 Apple 公证。如果 macOS 报告附件已损坏、包含恶意软件或签名无效，请立即停止安装，不要绕过 Gatekeeper。

@@ -146,6 +146,37 @@ final class LocalCodexUsageReaderTests: XCTestCase, @unchecked Sendable {
         XCTAssertFalse(FileManager.default.fileExists(atPath: ledger.path))
     }
 
+    func testGenericDatabaseTitleFallsBackToConcreteConversationName() async throws {
+        let workspace = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: workspace) }
+        try FileManager.default.createDirectory(at: workspace, withIntermediateDirectories: true)
+        let rollout = workspace.appendingPathComponent("conversation.jsonl")
+        try Data(
+            (tokenLine(timestamp: "2026-07-18T00:00:00Z", cumulative: 8, increment: 8) + "\n").utf8
+        ).write(to: rollout)
+        let database = workspace.appendingPathComponent("state_test.sqlite")
+        try createDatabase(
+            at: database,
+            threads: [("thread", "对话 1", rollout.path, 8, 1)],
+            edges: [],
+            firstUserMessages: ["thread": "为 Codex Toolbox 修复菜单栏折叠摘要"]
+        )
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let reader = LocalCodexUsageReader(
+            codexHome: workspace,
+            stateDatabaseURL: database,
+            ledgerURL: workspace.appendingPathComponent("ledger.json")
+        )
+
+        let history = try await reader.readUsage(calendar: calendar)
+
+        XCTAssertEqual(
+            history.summary(for: "2026-07-18")?.tasks.first?.title,
+            "为 Codex Toolbox 修复菜单栏折叠摘要"
+        )
+    }
+
     private func temporaryDirectory() -> URL {
         FileManager.default.temporaryDirectory
             .appendingPathComponent("LocalCodexUsageReaderTests-\(UUID().uuidString)", isDirectory: true)
@@ -190,7 +221,8 @@ final class LocalCodexUsageReaderTests: XCTestCase, @unchecked Sendable {
         at url: URL,
         threads: [(id: String, title: String, rollout: String, tokens: Int64, updated: Int64)],
         edges: [(parent: String, child: String)],
-        archivedThreadIDs: Set<String> = []
+        archivedThreadIDs: Set<String> = [],
+        firstUserMessages: [String: String] = [:]
     ) throws {
         var database: OpaquePointer?
         guard sqlite3_open(url.path, &database) == SQLITE_OK, let database else {
@@ -199,7 +231,8 @@ final class LocalCodexUsageReaderTests: XCTestCase, @unchecked Sendable {
         defer { sqlite3_close(database) }
         try execute(
             "CREATE TABLE threads (id TEXT PRIMARY KEY, title TEXT, rollout_path TEXT, " +
-            "tokens_used INTEGER, archived INTEGER, created_at INTEGER, updated_at INTEGER); " +
+            "tokens_used INTEGER, archived INTEGER, created_at INTEGER, updated_at INTEGER, " +
+            "first_user_message TEXT, preview TEXT, cwd TEXT); " +
             "CREATE TABLE thread_spawn_edges (parent_thread_id TEXT, child_thread_id TEXT);",
             in: database
         )
@@ -207,7 +240,8 @@ final class LocalCodexUsageReaderTests: XCTestCase, @unchecked Sendable {
             try execute(
                 "INSERT INTO threads VALUES (" +
                 "'\(sql(thread.id))','\(sql(thread.title))','\(sql(thread.rollout))'," +
-                "\(thread.tokens),\(archivedThreadIDs.contains(thread.id) ? 1 : 0),\(index + 1),\(thread.updated));",
+                "\(thread.tokens),\(archivedThreadIDs.contains(thread.id) ? 1 : 0),\(index + 1),\(thread.updated)," +
+                "'\(sql(firstUserMessages[thread.id] ?? ""))','','');",
                 in: database
             )
         }

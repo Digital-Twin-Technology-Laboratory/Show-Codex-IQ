@@ -24,7 +24,10 @@ final class ResetCreditsClientTests: XCTestCase, @unchecked Sendable {
                         "grantedAt": "2026-07-01T00:00:00Z",
                         "expiresAt": "2026-07-20T00:00:00Z",
                         "title": "Reset card",
-                        "description": "One reset"
+                        "description": "One reset",
+                        "access_token": "must-never-persist",
+                        "refresh_token": "must-never-persist-either",
+                        "cookie": "session=must-never-persist"
                     ]
                 ]
             ]
@@ -47,6 +50,9 @@ final class ResetCreditsClientTests: XCTestCase, @unchecked Sendable {
         let encoded = String(decoding: try JSONEncoder().encode(snapshot), as: UTF8.self)
         XCTAssertFalse(encoded.contains("opaque-secret"))
         XCTAssertFalse(encoded.contains("creditId"))
+        XCTAssertFalse(encoded.contains("must-never-persist"))
+        XCTAssertFalse(encoded.localizedCaseInsensitiveContains("title"))
+        XCTAssertFalse(encoded.localizedCaseInsensitiveContains("description"))
     }
 
     func testCacheContainsOnlySanitizedSnapshotFields() async throws {
@@ -58,12 +64,10 @@ final class ResetCreditsClientTests: XCTestCase, @unchecked Sendable {
             availableCount: 1,
             credits: [
                 ResetCreditSummary(
-                    resetType: "daily",
+                    sequence: 1,
                     status: "available",
                     grantedAt: Date(timeIntervalSince1970: 1),
-                    expiresAt: Date(timeIntervalSince1970: 2),
-                    title: "Card",
-                    description: "Description"
+                    expiresAt: Date(timeIntervalSince1970: 2)
                 )
             ],
             fetchedAt: Date(timeIntervalSince1970: 3)
@@ -75,8 +79,12 @@ final class ResetCreditsClientTests: XCTestCase, @unchecked Sendable {
 
         XCTAssertEqual(restored, snapshot)
         let text = try String(contentsOf: cacheURL, encoding: .utf8)
-        XCTAssertTrue(text.contains("\"schemaVersion\" : 1"))
+        XCTAssertTrue(text.contains("\"schemaVersion\" : 2"))
         XCTAssertFalse(text.localizedCaseInsensitiveContains("creditId"))
+        XCTAssertFalse(text.localizedCaseInsensitiveContains("access_token"))
+        XCTAssertFalse(text.localizedCaseInsensitiveContains("refresh_token"))
+        XCTAssertFalse(text.localizedCaseInsensitiveContains("cookie"))
+        XCTAssertFalse(text.localizedCaseInsensitiveContains("description"))
     }
 
     func testTransportRejectsConsumeWithoutLaunchingAProcess() async throws {
@@ -154,6 +162,25 @@ final class ResetCreditsClientTests: XCTestCase, @unchecked Sendable {
             } catch let actual as ResetCreditsError {
                 XCTAssertEqual(actual, expected)
             }
+        }
+    }
+
+    func testLocalizedErrorsNeverPrintCredentialsOrCompleteUniqueIDs() {
+        let secret = "access_token=top-secret refresh_token=also-secret " +
+            "cookie=session-secret id=123e4567-e89b-12d3-a456-426614174000"
+        let errors: [ResetCreditsError] = [
+            .launchFailed(secret),
+            .notLoggedIn(secret),
+            .protocolIncompatible(secret),
+            .server(secret)
+        ]
+
+        for error in errors {
+            let message = error.localizedDescription
+            XCTAssertFalse(message.contains("top-secret"))
+            XCTAssertFalse(message.contains("also-secret"))
+            XCTAssertFalse(message.contains("session-secret"))
+            XCTAssertFalse(message.contains("123e4567-e89b-12d3-a456-426614174000"))
         }
     }
 

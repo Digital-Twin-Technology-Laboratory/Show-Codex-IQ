@@ -1,35 +1,25 @@
 import Foundation
 
 public struct ResetCreditSummary: Codable, Hashable, Identifiable, Sendable {
-    public let resetType: String?
+    public let sequence: Int
     public let status: String
     public let grantedAt: Date?
     public let expiresAt: Date?
-    public let title: String?
-    public let description: String?
 
-    public var id: String {
-        [resetType, status, grantedAt?.ISO8601Format(), expiresAt?.ISO8601Format(), title]
-            .compactMap { $0 }
-            .joined(separator: "|")
-    }
+    public var id: String { "reset-credit-\(sequence)" }
 
     public var isAvailable: Bool { status.caseInsensitiveCompare("available") == .orderedSame }
 
     public init(
-        resetType: String?,
+        sequence: Int,
         status: String,
         grantedAt: Date?,
-        expiresAt: Date?,
-        title: String?,
-        description: String?
+        expiresAt: Date?
     ) {
-        self.resetType = resetType
+        self.sequence = sequence
         self.status = status
         self.grantedAt = grantedAt
         self.expiresAt = expiresAt
-        self.title = title
-        self.description = description
     }
 }
 

@@ -13,13 +13,13 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(settings.menuBarMetric, .iq)
         XCTAssertEqual(settings.dashboardModuleOrder, ToolboxModule.allCases)
         XCTAssertTrue(settings.hiddenDashboardModules.isEmpty)
-        XCTAssertTrue(settings.collapsedDashboardModules.isEmpty)
+        XCTAssertEqual(settings.collapsedDashboardModules, [.tokenUsage, .resetCredits])
         XCTAssertEqual(settings.usageRefreshInterval, .fiveMinutes)
         XCTAssertEqual(settings.usageTrendRange, .sevenDays)
         XCTAssertFalse(settings.anonymizesTaskTitles)
         XCTAssertEqual(settings.resetCreditsRefreshInterval, .thirtyMinutes)
         XCTAssertEqual(settings.resetExpiryWarning, .threeDays)
-        XCTAssertTrue(settings.showsResetCreditDescriptions)
+        XCTAssertTrue(settings.automaticUpdateChecksEnabled)
         XCTAssertEqual(settings.menuBarRankStyle, .hidden)
         XCTAssertTrue(settings.showsMenuBarIcon)
         XCTAssertFalse(settings.showsMenuBarDetails)
@@ -48,7 +48,7 @@ final class AppSettingsTests: XCTestCase {
         settings.anonymizesTaskTitles = true
         settings.resetCreditsRefreshInterval = .twoHours
         settings.resetExpiryWarning = .sevenDays
-        settings.showsResetCreditDescriptions = false
+        settings.automaticUpdateChecksEnabled = false
 
         let restored = AppSettings(defaults: defaults)
         XCTAssertEqual(restored.dashboardModuleOrder, [.resetCredits, .modelRadar, .tokenUsage])
@@ -59,12 +59,12 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertTrue(restored.anonymizesTaskTitles)
         XCTAssertEqual(restored.resetCreditsRefreshInterval, .twoHours)
         XCTAssertEqual(restored.resetExpiryWarning, .sevenDays)
-        XCTAssertFalse(restored.showsResetCreditDescriptions)
+        XCTAssertFalse(restored.automaticUpdateChecksEnabled)
 
         restored.resetDashboardConfiguration()
         XCTAssertEqual(restored.dashboardModuleOrder, ToolboxModule.allCases)
         XCTAssertTrue(restored.hiddenDashboardModules.isEmpty)
-        XCTAssertTrue(restored.collapsedDashboardModules.isEmpty)
+        XCTAssertEqual(restored.collapsedDashboardModules, [.tokenUsage, .resetCredits])
     }
 
     func testMenuBarDisplayPreferencesPersist() {

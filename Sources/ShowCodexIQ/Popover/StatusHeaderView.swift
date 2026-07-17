@@ -5,8 +5,8 @@ struct StatusHeaderView: View {
     @Bindable var appModel: AppModel
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 12) {
                 HStack(spacing: 7) {
                     Image(systemName: "brain.head.profile")
                         .font(.title2.weight(.semibold))
@@ -15,61 +15,56 @@ struct StatusHeaderView: View {
                         .font(.system(size: 17, weight: .bold, design: .rounded))
                 }
 
-                HStack(spacing: 7) {
-                    Label(statusTitle, systemImage: statusSymbol)
-                        .foregroundStyle(statusColor)
-                    if let date = appModel.latestBenchmarkDate {
-                        Text("测试 \(date)")
+                Spacer()
+
+                Button {
+                    Task { await appModel.refresh() }
+                } label: {
+                    if appModel.isRefreshing {
+                        ProgressView()
+                            .controlSize(.small)
+                            .frame(width: 16, height: 16)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
                     }
                 }
-                .font(.caption)
-
-                if let refreshed = appModel.lastSuccessfulRefresh {
-                    Text("获取于 \(refreshed.formatted(date: .omitted, time: .shortened))")
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                }
+                .adaptiveGlassControlStyle()
+                .controlSize(.small)
+                .disabled(appModel.isRefreshing)
+                .help("从 Codex 雷达重新获取")
+                .accessibilityLabel("从 Codex 雷达重新获取数据")
             }
 
-            Spacer()
+            HStack(spacing: 9) {
+                Image(systemName: "calendar")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.blue)
 
-            Button {
-                Task { await appModel.refresh() }
-            } label: {
-                if appModel.isRefreshing {
-                    ProgressView()
-                        .controlSize(.small)
-                        .frame(width: 16, height: 16)
-                } else {
-                    Image(systemName: "arrow.clockwise")
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Codex 雷达数据日期")
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(.secondary)
+
+                    if let date = appModel.latestBenchmarkDate {
+                        Text(MetricFormatter.benchmarkDateLabel(date))
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .monospacedDigit()
+                    } else {
+                        Text("暂无数据日期")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                    }
                 }
+
+                Spacer()
             }
-            .adaptiveGlassControlStyle()
-            .controlSize(.small)
-            .disabled(appModel.isRefreshing)
-            .help("立即刷新")
-            .accessibilityLabel("立即刷新 CodexRadar 数据")
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(.blue.opacity(0.09), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .stroke(.blue.opacity(0.18), lineWidth: 1)
+            }
         }
-    }
-
-    private var statusTitle: String {
-        if appModel.isRefreshing { return "正在刷新" }
-        if appModel.isStale { return "离线缓存" }
-        if appModel.snapshot != nil { return "数据已更新" }
-        return "等待数据"
-    }
-
-    private var statusSymbol: String {
-        if appModel.isRefreshing { return "arrow.triangle.2.circlepath" }
-        if appModel.isStale { return "wifi.slash" }
-        if appModel.snapshot != nil { return "checkmark.circle.fill" }
-        return "clock"
-    }
-
-    private var statusColor: Color {
-        if appModel.isRefreshing { return .blue }
-        if appModel.isStale { return .orange }
-        if appModel.snapshot != nil { return .green }
-        return .secondary
     }
 }

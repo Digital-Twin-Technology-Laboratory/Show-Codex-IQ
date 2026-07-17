@@ -10,4 +10,10 @@ final class MetricFormatterTests: XCTestCase {
         XCTAssertEqual(MetricFormatter.menuBarValue(5_103, metric: .duration), "1.4h")
         XCTAssertEqual(MetricFormatter.compactModelName("GPT-5.6 Sol xhigh"), "5.6 Sol xh")
     }
+
+    func testBenchmarkDateFormatting() {
+        XCTAssertEqual(MetricFormatter.benchmarkDateLabel("2026-07-13-pm"), "2026-07-13 · PM")
+        XCTAssertEqual(MetricFormatter.benchmarkDateLabel("2026-07-13"), "2026-07-13")
+        XCTAssertEqual(MetricFormatter.benchmarkDateLabel("unknown"), "unknown")
+    }
 }

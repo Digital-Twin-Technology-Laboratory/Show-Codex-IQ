@@ -1,6 +1,17 @@
 import Foundation
 
 public enum MetricFormatter {
+    public static func benchmarkDateLabel(_ dateKey: String) -> String {
+        let components = dateKey.split(separator: "-", omittingEmptySubsequences: false)
+        guard components.count >= 3 else { return dateKey }
+
+        let date = components.prefix(3).joined(separator: "-")
+        guard components.count >= 4 else { return date }
+
+        let session = components.dropFirst(3).joined(separator: "-").uppercased()
+        return session.isEmpty ? date : "\(date) · \(session)"
+    }
+
     public static func detailValue(_ value: Double, metric: RankingMetric) -> String {
         switch metric {
         case .iq:

@@ -6,6 +6,13 @@
 
 ## [Unreleased]
 
+## [0.1.0-beta.6] - 2026-07-17
+
+### Changed
+
+- 菜单栏弹窗不再强调本地“数据已更新”和获取时间，改为高亮展示 Codex 雷达网站实际提供的最新测试日期。
+- 测试日期统一格式化为 `YYYY-MM-DD · AM/PM`，让数据时效性更容易识别。
+
 ## [0.1.0-beta.5] - 2026-07-15
 
 ### Added
@@ -117,7 +124,8 @@
 
 - 完善缺失指标、未知字段和并列排名的容错行为。
 
-[Unreleased]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/compare/v0.1.0-beta.5...HEAD
+[Unreleased]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/compare/v0.1.0-beta.6...HEAD
+[0.1.0-beta.6]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/compare/v0.1.0-beta.5...v0.1.0-beta.6
 [0.1.0-beta.5]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/compare/v0.1.0-beta.4...v0.1.0-beta.5
 [0.1.0-beta.4]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/releases/tag/v0.1.0-beta.4
 [0.1.0-beta.3]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/releases/tag/v0.1.0-beta.3

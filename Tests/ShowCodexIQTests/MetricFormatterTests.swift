@@ -13,6 +13,17 @@ final class MetricFormatterTests: XCTestCase {
 
     func testBenchmarkDateFormatting() {
         XCTAssertEqual(MetricFormatter.benchmarkDateLabel("2026-07-13-pm"), "2026-07-13 · PM")
+        XCTAssertEqual(MetricFormatter.benchmarkDateLabel("2026-07-13-am_2"), "2026-07-13 · AM")
+        XCTAssertEqual(
+            MetricFormatter.benchmarkDateLabel("2026-07-17T13:03:49+08:00"),
+            "2026-07-17 · PM"
+        )
+        XCTAssertEqual(
+            MetricFormatter.benchmarkDateLabel("2026-07-17T07:03:49.123Z"),
+            "2026-07-17 · AM"
+        )
+        XCTAssertEqual(MetricFormatter.benchmarkDateLabel("2026-07-17T00:00:00Z"), "2026-07-17 · AM")
+        XCTAssertEqual(MetricFormatter.benchmarkDateLabel("2026-07-17T12:00:00Z"), "2026-07-17 · PM")
         XCTAssertEqual(MetricFormatter.benchmarkDateLabel("2026-07-13"), "2026-07-13")
         XCTAssertEqual(MetricFormatter.benchmarkDateLabel("unknown"), "unknown")
     }

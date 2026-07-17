@@ -54,7 +54,10 @@ require(MetricFormatter.detailValue(2.429979, metric: .cost) == "$2.43", "cost f
 require(MetricFormatter.detailValue(82.25, metric: .overall) == "82.3", "stable half-up formatting")
 require(MetricFormatter.menuBarValue(5_103, metric: .duration) == "1.4h", "duration formatting")
 require(MetricFormatter.compactModelName("GPT-5.6 Sol xhigh") == "5.6 Sol xh", "compact model name")
-require(MetricFormatter.benchmarkDateLabel("2026-07-13-pm") == "2026-07-13 · PM", "benchmark date")
+require(
+    MetricFormatter.benchmarkDateLabel("2026-07-17T13:03:49+08:00") == "2026-07-17 · PM",
+    "ISO benchmark date"
+)
 
 let settingsVerified = await MainActor.run {
     let suite = "CoreVerification.\(UUID().uuidString)"

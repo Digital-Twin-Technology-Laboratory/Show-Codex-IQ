@@ -6,6 +6,12 @@
 
 ## [Unreleased]
 
+## [0.1.0-beta.6.1] - 2026-07-17
+
+### Fixed
+
+- 兼容 Codex 雷达将测试日期改为 ISO 8601 时间戳的数据格式变化，弹窗仍统一显示为 `YYYY-MM-DD · AM/PM`，不再暴露秒数和时区偏移。
+
 ## [0.1.0-beta.6] - 2026-07-17
 
 ### Changed
@@ -124,7 +130,8 @@
 
 - 完善缺失指标、未知字段和并列排名的容错行为。
 
-[Unreleased]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/compare/v0.1.0-beta.6...HEAD
+[Unreleased]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/compare/v0.1.0-beta.6.1...HEAD
+[0.1.0-beta.6.1]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/compare/v0.1.0-beta.6...v0.1.0-beta.6.1
 [0.1.0-beta.6]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/compare/v0.1.0-beta.5...v0.1.0-beta.6
 [0.1.0-beta.5]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/compare/v0.1.0-beta.4...v0.1.0-beta.5
 [0.1.0-beta.4]: https://github.com/Digital-Twin-Technology-Laboratory/Show-Codex-IQ/releases/tag/v0.1.0-beta.4

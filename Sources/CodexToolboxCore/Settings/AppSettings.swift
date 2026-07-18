@@ -68,6 +68,14 @@ public enum UsageTrendRange: Int, Codable, CaseIterable, Identifiable, Sendable 
     public var displayName: String { "\(rawValue) 天" }
 }
 
+public enum UsageExpandedTaskLimit: Int, Codable, CaseIterable, Identifiable, Sendable {
+    case topFive = 5
+    case topTen = 10
+
+    public var id: Int { rawValue }
+    public var displayName: String { "Top \(rawValue)" }
+}
+
 public enum ResetCreditsRefreshInterval: Int, Codable, CaseIterable, Identifiable, Sendable {
     case fifteenMinutes = 15
     case thirtyMinutes = 30
@@ -117,6 +125,10 @@ public final class AppSettings {
 
     public var usageTrendRange: UsageTrendRange {
         didSet { defaults.set(usageTrendRange.rawValue, forKey: Keys.usageTrendRange) }
+    }
+
+    public var usageExpandedTaskLimit: UsageExpandedTaskLimit {
+        didSet { defaults.set(usageExpandedTaskLimit.rawValue, forKey: Keys.usageExpandedTaskLimit) }
     }
 
     public var anonymizesTaskTitles: Bool {
@@ -200,6 +212,9 @@ public final class AppSettings {
         usageTrendRange = UsageTrendRange(
             rawValue: defaults.integer(forKey: Keys.usageTrendRange)
         ) ?? .sevenDays
+        usageExpandedTaskLimit = UsageExpandedTaskLimit(
+            rawValue: defaults.integer(forKey: Keys.usageExpandedTaskLimit)
+        ) ?? .topFive
         anonymizesTaskTitles = defaults.bool(forKey: Keys.anonymizesTaskTitles)
         resetCreditsRefreshInterval = ResetCreditsRefreshInterval(
             rawValue: defaults.integer(forKey: Keys.resetCreditsRefreshInterval)
@@ -372,6 +387,7 @@ public final class AppSettings {
         static let collapsedDashboardModules = "collapsedDashboardModules"
         static let usageRefreshInterval = "usageRefreshIntervalMinutes"
         static let usageTrendRange = "usageTrendRangeDays"
+        static let usageExpandedTaskLimit = "usageExpandedTaskLimit"
         static let anonymizesTaskTitles = "anonymizesTaskTitles"
         static let resetCreditsRefreshInterval = "resetCreditsRefreshIntervalMinutes"
         static let resetExpiryWarning = "resetExpiryWarningDays"

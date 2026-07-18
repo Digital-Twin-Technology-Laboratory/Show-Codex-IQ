@@ -16,6 +16,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(settings.collapsedDashboardModules, [.tokenUsage, .resetCredits])
         XCTAssertEqual(settings.usageRefreshInterval, .fiveMinutes)
         XCTAssertEqual(settings.usageTrendRange, .sevenDays)
+        XCTAssertEqual(settings.usageExpandedTaskLimit, .topFive)
         XCTAssertFalse(settings.anonymizesTaskTitles)
         XCTAssertEqual(settings.resetCreditsRefreshInterval, .thirtyMinutes)
         XCTAssertEqual(settings.resetExpiryWarning, .threeDays)
@@ -45,6 +46,7 @@ final class AppSettingsTests: XCTestCase {
         settings.setDashboardModule(.modelRadar, isCollapsed: true)
         settings.usageRefreshInterval = .oneMinute
         settings.usageTrendRange = .ninetyDays
+        settings.usageExpandedTaskLimit = .topTen
         settings.anonymizesTaskTitles = true
         settings.resetCreditsRefreshInterval = .twoHours
         settings.resetExpiryWarning = .sevenDays
@@ -56,6 +58,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertTrue(restored.dashboardConfiguration.collapsedModules.contains(.modelRadar))
         XCTAssertEqual(restored.usageRefreshInterval, .oneMinute)
         XCTAssertEqual(restored.usageTrendRange, .ninetyDays)
+        XCTAssertEqual(restored.usageExpandedTaskLimit, .topTen)
         XCTAssertTrue(restored.anonymizesTaskTitles)
         XCTAssertEqual(restored.resetCreditsRefreshInterval, .twoHours)
         XCTAssertEqual(restored.resetExpiryWarning, .sevenDays)

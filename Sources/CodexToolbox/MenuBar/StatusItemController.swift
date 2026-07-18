@@ -8,6 +8,8 @@ final class StatusItemController: NSObject {
     private let popover: NSPopover
     private let appModel: AppModel
     private let dashboardLayoutState: DashboardLayoutState
+    private var pendingPopoverSize: NSSize?
+    private var isPopoverSizeUpdateScheduled = false
 
     init(appModel: AppModel) {
         self.appModel = appModel
@@ -64,9 +66,36 @@ final class StatusItemController: NSObject {
 
     private func updatePopoverHeight(to height: CGFloat) {
         let size = NSSize(width: DashboardLayout.width, height: ceil(height))
-        if popover.contentSize != size {
-            popover.contentSize = size
+        guard size != pendingPopoverSize else { return }
+        if size == popover.contentSize {
+            pendingPopoverSize = nil
+            return
         }
+        pendingPopoverSize = size
+        guard !isPopoverSizeUpdateScheduled else { return }
+        isPopoverSizeUpdateScheduled = true
+
+        // A SwiftUI layout callback is still inside NSHostingView.layout().
+        // Mutating NSPopover.contentSize synchronously can re-enter AppKit's
+        // animated resize path and crash in NSMoveHelper on macOS 27.
+        DispatchQueue.main.async { [weak self] in
+            self?.applyPendingPopoverSize()
+        }
+    }
+
+    private func applyPendingPopoverSize() {
+        isPopoverSizeUpdateScheduled = false
+        guard let size = pendingPopoverSize else { return }
+        pendingPopoverSize = nil
+        guard popover.contentSize != size else { return }
+
+        // Keep the normal presentation animation, but never ask AppKit to
+        // animate a live content-size mutation. SwiftUI owns the content
+        // transition and remains fully interruptible.
+        let presentationAnimates = popover.animates
+        popover.animates = false
+        popover.contentSize = size
+        popover.animates = presentationAnimates
     }
 
     private func updateMaximumPopoverHeight() {
@@ -88,6 +117,7 @@ final class StatusItemController: NSObject {
     private func showPopover() {
         guard !popover.isShown else { return }
         updateMaximumPopoverHeight()
+        applyPendingPopoverSize()
         NSApplication.shared.activate(ignoringOtherApps: true)
         popover.show(relativeTo: statusView.bounds, of: statusView, preferredEdge: .minY)
         popover.contentViewController?.view.window?.makeKey()

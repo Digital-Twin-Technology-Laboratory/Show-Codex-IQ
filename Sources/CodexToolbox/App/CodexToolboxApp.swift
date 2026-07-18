@@ -1,4 +1,5 @@
 import AppKit
+import CodexToolboxCore
 import SwiftUI
 
 @main
@@ -21,9 +22,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     override init() {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("--demo-dashboard") {
+            let demoDefaults = UserDefaults(suiteName: "io.github.zzzzzzjw.CodexToolbox.Demo")!
+            let demoCacheURL = FileManager.default.temporaryDirectory
+                .appendingPathComponent("CodexToolbox-Demo", isDirectory: true)
+                .appendingPathComponent("reset-credits.json")
             appModel = AppModel(
+                settings: AppSettings(defaults: demoDefaults),
                 usageReader: DemoUsageReader(),
-                resetCreditsReader: DemoResetCreditsReader()
+                resetCreditsReader: DemoResetCreditsReader(),
+                resetCreditsCache: ResetCreditsCacheStore(fileURL: demoCacheURL),
+                isDemoMode: true
             )
         } else {
             appModel = AppModel()
@@ -43,7 +51,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             object: nil
         )
         statusItemController = StatusItemController(appModel: appModel)
-        LaunchAtLoginController.reconcileAfterRename(settings: appModel.settings)
+        if !appModel.isDemoMode {
+            LaunchAtLoginController.reconcileAfterRename(settings: appModel.settings)
+        }
 
         Task {
             await appModel.start()

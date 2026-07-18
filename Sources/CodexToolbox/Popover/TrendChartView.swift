@@ -90,7 +90,7 @@ struct TrendChartView: View {
             AxisMarks(values: .automatic(desiredCount: 4)) { value in
                 AxisGridLine().foregroundStyle(.secondary.opacity(0.12))
                 AxisTick()
-                AxisValueLabel(anchor: .center) {
+                AxisValueLabel {
                     if let key = value.as(String.self) {
                         Text(TrendPointBuilder.shortDateLabel(key))
                     }
@@ -101,7 +101,7 @@ struct TrendChartView: View {
         .chartYAxis {
             AxisMarks(position: .leading) { value in
                 AxisGridLine().foregroundStyle(.secondary.opacity(0.12))
-                AxisValueLabel(anchor: .center) {
+                AxisValueLabel {
                     if let number = value.as(Double.self) {
                         Text(MetricFormatter.menuBarValue(number, metric: state.metric))
                     }

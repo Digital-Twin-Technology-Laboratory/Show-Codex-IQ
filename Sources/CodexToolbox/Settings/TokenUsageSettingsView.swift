@@ -7,10 +7,15 @@ struct TokenUsageSettingsView: View {
 
     var body: some View {
         Form {
-            Section("刷新与趋势") {
+            Section("刷新与展示") {
                 Picker("刷新间隔", selection: refreshIntervalBinding) {
                     ForEach(UsageRefreshInterval.allCases) { interval in
                         Text(interval.displayName).tag(interval)
+                    }
+                }
+                Picker("榜单展开后", selection: expandedTaskLimitBinding) {
+                    ForEach(UsageExpandedTaskLimit.allCases) { limit in
+                        Text(limit.displayName).tag(limit)
                     }
                 }
                 Picker("趋势范围", selection: trendRangeBinding) {
@@ -18,6 +23,9 @@ struct TokenUsageSettingsView: View {
                         Text(range.displayName).tag(range)
                     }
                 }
+                Text("用量榜单默认显示 Top 3；点击榜单卡片后按此设置展开。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section("任务名称") {
@@ -62,6 +70,13 @@ struct TokenUsageSettingsView: View {
         Binding(
             get: { appModel.settings.usageTrendRange },
             set: { appModel.settings.usageTrendRange = $0 }
+        )
+    }
+
+    private var expandedTaskLimitBinding: Binding<UsageExpandedTaskLimit> {
+        Binding(
+            get: { appModel.settings.usageExpandedTaskLimit },
+            set: { appModel.settings.usageExpandedTaskLimit = $0 }
         )
     }
 

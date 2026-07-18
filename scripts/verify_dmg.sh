@@ -10,6 +10,12 @@ fi
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 source "$ROOT_DIR/scripts/version.sh"
 
+if pgrep -f '/Codex Toolbox.app/Contents/MacOS/Codex Toolbox' >/dev/null 2>&1; then
+    echo "Codex Toolbox is already running. Quit every installed, test, and demo copy before DMG launch verification." >&2
+    echo "This prevents multiple menu-bar instances with the same Bundle ID from being mistaken for the build under test." >&2
+    exit 1
+fi
+
 DMG_PATH="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
 MOUNT_POINT="$(mktemp -d "${TMPDIR%/}/CodexToolbox-verify-mount.XXXXXX")"
 SMOKE_DIR="$(mktemp -d "${TMPDIR%/}/CodexToolbox-launch-smoke.XXXXXX")"

@@ -120,8 +120,19 @@ struct DashboardView: View {
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(.blue)
             VStack(alignment: .leading, spacing: 1) {
-                Text("Codex Toolbox")
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                HStack(spacing: 7) {
+                    Text("Codex Toolbox")
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                    if appModel.isDemoMode {
+                        Text("演示数据")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(.orange)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(.orange.opacity(0.12), in: Capsule())
+                            .accessibilityLabel("当前为演示数据，不是账户真实查询")
+                    }
+                }
                 Text("Codex 实用工具，一处查看")
                     .font(.caption2)
                     .foregroundStyle(.secondary)

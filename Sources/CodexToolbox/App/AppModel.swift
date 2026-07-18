@@ -14,6 +14,7 @@ enum UpdateCheckState: Equatable {
 @Observable
 final class AppModel {
     let settings: AppSettings
+    let isDemoMode: Bool
 
     private let repository: RadarRepository
     private let radarScheduler: RefreshScheduler
@@ -48,9 +49,11 @@ final class AppModel {
         usageReader: any CodexUsageReading & UsageHistoryClearing = LocalCodexUsageReader(),
         resetCreditsReader: any AccountRateLimitsReading = ResetCreditsClient(),
         resetCreditsCache: ResetCreditsCacheStore = ResetCreditsCacheStore(),
-        releaseChecker: any ReleaseChecking = GitHubReleaseClient()
+        releaseChecker: any ReleaseChecking = GitHubReleaseClient(),
+        isDemoMode: Bool = false
     ) {
         self.settings = settings
+        self.isDemoMode = isDemoMode
         self.repository = repository
         self.radarScheduler = radarScheduler
         self.usageScheduler = usageScheduler

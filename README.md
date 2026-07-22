@@ -12,7 +12,7 @@
 Codex Toolbox 是一款原生 macOS 菜单栏工具。它保留 Show Codex IQ 的模型智商、费用、耗时和综合排名，同时新增完全本机的 Token 审计与账户重置卡只读查询。三个模块各自刷新、各自缓存，任一数据源失败都不会清空其他结果。
 
 > [!NOTE]
-> **v1.0.0 预计正式发布时间：2026 年 7 月 20 日。** 目前尚未取得 Developer ID Application、Developer ID Installer 和 Apple 公证凭据。如果发布时仍未就绪，Gatekeeper 会影响安装体验；未通过签名与公证门禁的附件不会冒充正式包。
+> **v1.0.0 已于 2026 年 7 月 22 日正式发布。** PKG 与 DMG 均使用 Developer ID 签名，通过 Apple 公证并已 staple ticket；请只从本仓库的正式 Release 下载，并用随附的 `.sha256` 校验文件完整性。
 
 > [!IMPORTANT]
 > 本项目与 OpenAI、ChatGPT 和 Codex 雷达均无官方隶属关系。模型排名来自 [codexradar.com](https://codexradar.com/)，详见[数据来源与授权说明](docs/data-source.md)。
